@@ -1,0 +1,48 @@
+.footer {
+  font-family: 'Arial', sans-serif;
+  background-color: #28a745; /* green like Home page */
+  color: #ffffff;
+  padding-top: 40px;
+  padding-bottom: 20px;
+}
+
+.footer h5 {
+  color: #ffffff;
+  font-weight: 700;
+  margin-bottom: 1rem;
+}
+
+.footer p, .footer ul, .footer li {
+  color: #e0f2e9;
+  font-size: 0.95rem;
+}
+
+.footer-link {
+  color: #e0f2e9;
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+.footer-link:hover {
+  color: #ffffff;
+  text-decoration: underline;
+}
+
+.footer-social {
+  color: #e0f2e9;
+  font-size: 1.5rem;
+  transition: color 0.3s ease;
+}
+
+.footer-social:hover {
+  color: #ffffff;
+}
+
+.footer hr {
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.footer .text-center {
+  margin-top: 15px;
+  font-size: 0.9rem;
+}

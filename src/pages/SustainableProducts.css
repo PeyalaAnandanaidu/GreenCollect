@@ -1,0 +1,488 @@
+.sustainable-products-page {
+    min-height: 100vh;
+    background-color: #f8f9fa;
+    padding: 2rem;
+}
+
+.products-header {
+    background: white;
+    border-radius: 16px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    border: 1px solid #e9ecef;
+}
+
+.header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 2rem;
+}
+
+.header-main {
+    flex: 1;
+}
+
+.page-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #2d3748;
+    margin: 0 0 0.5rem 0;
+}
+
+.page-subtitle {
+    color: #6c757d;
+    font-size: 1.1rem;
+    margin: 0;
+}
+
+.coins-display {
+    flex-shrink: 0;
+}
+
+.coins-card {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    color: white;
+    padding: 1.5rem;
+    border-radius: 12px;
+    min-width: 200px;
+}
+
+.coins-icon {
+    font-size: 2rem;
+}
+
+.coins-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.coins-label {
+    font-size: 0.875rem;
+    opacity: 0.9;
+}
+
+.coins-amount {
+    font-size: 1.75rem;
+    font-weight: 700;
+}
+
+.products-controls {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+}
+
+.search-container {
+    position: relative;
+    flex: 1;
+    min-width: 300px;
+}
+
+.search-icon {
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #6c757d;
+}
+
+.search-input {
+    width: 100%;
+    padding: 0.75rem 1rem 0.75rem 2.5rem;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    background: white;
+    transition: all 0.2s;
+}
+
+.search-input:focus {
+    outline: none;
+    border-color: #28a745;
+    box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.1);
+}
+
+.filter-container {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: white;
+    padding: 0.75rem 1rem;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+}
+
+.filter-icon {
+    color: #6c757d;
+}
+
+.filter-select {
+    border: none;
+    background: none;
+    font-size: 0.875rem;
+    color: #2d3748;
+    cursor: pointer;
+}
+
+.filter-select:focus {
+    outline: none;
+}
+
+.products-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 3rem;
+}
+
+.product-card {
+    background: white;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    border: 1px solid #e9ecef;
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+}
+
+.product-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.product-image {
+    position: relative;
+    height: 120px;
+    background: linear-gradient(135deg, #e8f5e8 0%, #d4edda 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem;
+}
+
+.product-emoji {
+    font-size: 3rem;
+}
+
+.product-badges {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    align-items: flex-end;
+}
+
+.eco-rating {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    background: rgba(255, 255, 255, 0.9);
+    padding: 0.25rem 0.5rem;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #28a745;
+}
+
+.eco-icon {
+    font-size: 0.75rem;
+}
+
+.badge {
+    padding: 0.25rem 0.5rem;
+    border-radius: 8px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.badge.zero-waste {
+    background: #d4edda;
+    color: #155724;
+}
+
+.badge.biodegradable {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.product-content {
+    padding: 1.5rem;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.product-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+}
+
+.product-name {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: #2d3748;
+    margin: 0;
+    flex: 1;
+}
+
+.product-price {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: #fff3cd;
+    padding: 0.5rem 0.75rem;
+    border-radius: 8px;
+    font-weight: 700;
+    color: #856404;
+    flex-shrink: 0;
+}
+
+.price-icon {
+    font-size: 0.875rem;
+}
+
+.product-description {
+    color: #6c757d;
+    font-size: 0.875rem;
+    line-height: 1.5;
+    margin: 0;
+    flex: 1;
+}
+
+.product-category {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.75rem;
+    color: #6c757d;
+}
+
+.category-icon {
+    font-size: 0.7rem;
+}
+
+.product-rating {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.rating-stars {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.star {
+    font-size: 0.75rem;
+    color: #e5e7eb;
+}
+
+.star.filled {
+    color: #fbbf24;
+}
+
+.rating-value {
+    font-size: 0.75rem;
+    color: #6c757d;
+    margin-left: 0.25rem;
+}
+
+.product-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.product-tag {
+    background: #f8f9fa;
+    color: #6c757d;
+    padding: 0.25rem 0.5rem;
+    border-radius: 12px;
+    font-size: 0.7rem;
+    border: 1px solid #e9ecef;
+}
+
+.product-actions {
+    margin-top: auto;
+}
+
+.redeem-btn {
+    width: 100%;
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.redeem-btn.available {
+    background: #28a745;
+    color: white;
+}
+
+.redeem-btn.available:hover {
+    background: #218838;
+    transform: translateY(-1px);
+}
+
+.redeem-btn.insufficient {
+    background: #6c757d;
+    color: white;
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.earn-coins-section {
+    background: white;
+    border-radius: 16px;
+    padding: 2rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    border: 1px solid #e9ecef;
+}
+
+.section-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #2d3748;
+    margin: 0 0 1.5rem 0;
+    text-align: center;
+}
+
+.earn-methods {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+}
+
+.earn-method {
+    text-align: center;
+    padding: 1.5rem;
+    background: #f8f9fa;
+    border-radius: 12px;
+    border-left: 4px solid #28a745;
+    transition: all 0.3s ease;
+}
+
+.earn-method:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.method-icon {
+    font-size: 2rem;
+    margin-bottom: 1rem;
+}
+
+.earn-method h4 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #2d3748;
+    margin: 0 0 0.5rem 0;
+}
+
+.earn-method p {
+    color: #6c757d;
+    font-size: 0.875rem;
+    margin: 0;
+    line-height: 1.4;
+}
+
+.empty-state {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 4rem 2rem;
+    background: white;
+    border-radius: 16px;
+    border: 2px dashed #e9ecef;
+}
+
+.empty-icon {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+}
+
+.empty-state h3 {
+    color: #2d3748;
+    margin: 0 0 0.5rem 0;
+}
+
+.empty-state p {
+    color: #6c757d;
+    margin: 0;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .sustainable-products-page {
+        padding: 1rem;
+    }
+
+    .products-header {
+        padding: 1.5rem;
+    }
+
+    .header-content {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .page-title {
+        font-size: 2rem;
+    }
+
+    .coins-card {
+        min-width: auto;
+        justify-content: center;
+    }
+
+    .products-controls {
+        flex-direction: column;
+    }
+
+    .search-container {
+        min-width: auto;
+    }
+
+    .products-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .earn-methods {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 480px) {
+    .sustainable-products-page {
+        padding: 0.5rem;
+    }
+
+    .product-card {
+        margin: 0 0.5rem;
+    }
+
+    .page-title {
+        font-size: 1.75rem;
+    }
+}

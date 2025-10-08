@@ -1,0 +1,102 @@
+/* ====================== index.css ====================== */
+
+/* Body styling */
+body {
+  background-color: #f8f9fa;
+  color: #212529;
+  font-family: 'Inter', sans-serif;
+  margin: 0;
+  padding: 0;
+}
+
+/* Remove extra space below navbar */
+.main-content {
+  margin: 0;
+  padding: 0;
+  padding-top: 70px; /* offset for navbar height */
+}
+
+/* Hero section */
+.hero-section {
+  height: 100vh;
+  background: linear-gradient(to right, #d4edda, #ffffff);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+
+/* Spinning recycling icon */
+.recycle-icon {
+  font-size: 4rem;
+  color: #28a745;
+  animation: spin 4s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Service card hover effect */
+.service-card:hover {
+  transform: translateY(-5px);
+  transition: all 0.3s ease-in-out;
+}
+
+/* Service icon size */
+.service-icon {
+  font-size: 2.5rem;
+}
+
+/* ====================== Navbar Login/Register Buttons ====================== */
+.auth-buttons {
+  display: flex;
+  gap: 1rem; /* space between login & register */
+}
+
+.login-btn, .register-btn {
+  padding: 0.6rem 1.2rem;
+  border-radius: 8px;
+  font-weight: 600;
+  text-decoration: none;
+  border: 2px solid #10b981;
+  transition: all 0.3s ease;
+}
+
+.login-btn {
+   background: #10b981;
+  color: white;
+}
+
+.login-btn:hover {
+  background: transparent;
+  color: #10b981;
+}
+
+.register-btn {
+  background: #10b981;
+  color: white;
+}
+
+.register-btn:hover {
+  background: transparent;
+  color: #10b981;
+}
+
+/* ====================== Home.css ====================== */
+/* Keep all your Home.css content here */
+/* Hero, services, process, rewards, partners, testimonials, CTA */
+/* Include your rolling logo animation, smaller service cards, responsive styles, etc. */
+
+/* ... Paste your entire Home.css here ... */
+.hero-section {
+  min-height: calc(100vh - 70px); /* full screen minus navbar */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+  padding-top: 0; /* remove extra padding */
+}

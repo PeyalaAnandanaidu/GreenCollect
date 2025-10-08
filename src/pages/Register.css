@@ -1,0 +1,248 @@
+.register-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  padding: 20px;
+}
+
+.register-card {
+  background: white;
+  border-radius: 15px;
+  padding: 40px;
+  width: 100%;
+  max-width: 600px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+}
+
+.form-section {
+  margin-bottom: 30px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.section-title {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 15px;
+  display: flex;
+  align-items: center;
+}
+
+.section-title::before {
+  content: '';
+  width: 4px;
+  height: 20px;
+  background: #28a745;
+  margin-right: 10px;
+  border-radius: 2px;
+}
+
+.section-subtitle {
+  color: #666;
+  font-size: 0.9rem;
+  margin-bottom: 20px;
+  line-height: 1.4;
+}
+
+.form-label {
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 8px;
+  display: block;
+}
+
+.form-control, .form-select {
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 12px 15px;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+}
+
+.form-control:focus, .form-select:focus {
+  border-color: #28a745;
+  box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25);
+}
+
+/* Role Selection */
+.role-selection {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+  margin-top: 10px;
+}
+
+.role-option {
+  border: 2px solid #e0e0e0;
+  border-radius: 10px;
+  padding: 15px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.role-option:hover {
+  border-color: #28a745;
+  background: #f8fff9;
+}
+
+.role-option.active {
+  border-color: #28a745;
+  background: #f8fff9;
+  box-shadow: 0 2px 10px rgba(40, 167, 69, 0.2);
+}
+
+.role-radio {
+  position: absolute;
+  opacity: 0;
+}
+
+.role-label {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  cursor: pointer;
+  margin: 0;
+}
+
+.role-icon {
+  font-size: 2rem;
+  width: 50px;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f8f9fa;
+  border-radius: 10px;
+}
+
+.role-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.role-info strong {
+  color: #333;
+  margin-bottom: 4px;
+}
+
+.role-info span {
+  color: #666;
+  font-size: 0.8rem;
+}
+
+/* Collector Fields */
+.collector-fields {
+  background: #f8fff9;
+  border-radius: 10px;
+  padding: 20px;
+  border: 2px solid #e8f5e8;
+}
+
+.collector-notice {
+  display: flex;
+  align-items: flex-start;
+  gap: 15px;
+  background: #fff3cd;
+  border: 1px solid #ffeaa7;
+  border-radius: 8px;
+  padding: 15px;
+  margin-top: 20px;
+}
+
+.notice-icon {
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}
+
+.notice-content strong {
+  color: #856404;
+  display: block;
+  margin-bottom: 5px;
+}
+
+.notice-content p {
+  color: #856404;
+  font-size: 0.9rem;
+  margin: 0;
+  line-height: 1.4;
+}
+
+/* Register Button */
+.register-btn {
+  background: linear-gradient(135deg, #28a745, #20c997);
+  border: none;
+  border-radius: 8px;
+  padding: 15px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.register-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(40, 167, 69, 0.4);
+}
+
+/* Login Link */
+.text-center {
+  text-align: center;
+}
+
+.text-center a {
+  color: #28a745;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.text-center a:hover {
+  text-decoration: underline;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .register-card {
+    padding: 30px 20px;
+    margin: 10px;
+  }
+
+  .role-selection {
+    grid-template-columns: 1fr;
+  }
+
+  .row {
+    flex-direction: column;
+  }
+
+  .col-md-6 {
+    width: 100%;
+  }
+}
+
+/* Form Validation Styles */
+.form-control:invalid {
+  border-color: #dc3545;
+}
+
+.form-control:valid {
+  border-color: #28a745;
+}
+
+/* Animation for collector fields */
+.collector-fields {
+  animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

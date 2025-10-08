@@ -1,0 +1,26 @@
+.login-page {
+  background: linear-gradient(135deg, #d4edda 0%, #ffffff 100%);
+}
+
+.login-card {
+  background-color: #ffffff;
+  max-width: 400px;
+  width: 100%;
+  border-radius: 15px;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.login-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+}
+
+.btn-success {
+  background-color: #28a745;
+  border: none;
+  transition: all 0.3s ease;
+}
+
+.btn-success:hover {
+  background-color: #218838;
+}
