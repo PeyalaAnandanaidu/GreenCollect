@@ -12,7 +12,6 @@ function App() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('overview');
   const [userRole, setUserRole] = useState<'user' | 'collector' | 'admin'>('collector');
-
   const handleMenuToggle = () => {
     setMenuOpen(!menuOpen);
   };

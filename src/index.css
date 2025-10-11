@@ -91,12 +91,3 @@ body {
 /* Include your rolling logo animation, smaller service cards, responsive styles, etc. */
 
 /* ... Paste your entire Home.css here ... */
-.hero-section {
-  min-height: calc(100vh - 70px); /* full screen minus navbar */
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-  overflow: hidden;
-  padding-top: 0; /* remove extra padding */
-}
