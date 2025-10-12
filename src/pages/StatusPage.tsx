@@ -87,7 +87,7 @@ const StatusPage: React.FC = () => {
             <div className="container">
                 <div className={`status-header ${mounted ? 'animate-in' : ''}`}>
                     <div className="header-content">
-                        <button className="back-button" onClick={() => navigate('/dashboard')}>
+                        <button className="back-button" onClick={() => navigate('/UserDashboard')}>
                             <FaChevronLeft />
                             Back to Dashboard
                         </button>

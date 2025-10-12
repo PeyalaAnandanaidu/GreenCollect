@@ -251,24 +251,7 @@ const SustainableProducts: React.FC = () => {
 
     return (
         <div className="sustainable-products-page">
-            {/* Header */}
-            <div className="products-header">
-                <div className="header-content">
-                    <div className="header-main">
-                        <h1 className="page-title">JANATHA GARAGE</h1>
-                        <p className="page-subtitle">Search sustainable products</p>
-                    </div>
-                    <div className="coins-display">
-                        <div className="coins-card">
-                            <FaCoins className="coins-icon" />
-                            <div className="coins-info">
-                                <span className="coins-label">Your Eco Coins</span>
-                                <span className="coins-amount">{userCoins}</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+           
 
             {/* Stats Cards */}
             <div className="stats-grid">
@@ -391,7 +374,7 @@ const SustainableProducts: React.FC = () => {
                             </div>
 
                             <div className="product-content">
-                                <div className="product-header">
+                                <div className="product-header-1">
                                     <h3 className="product-name">{product.name}</h3>
                                     <div className="product-price-section">
                                         {product.originalPrice && (

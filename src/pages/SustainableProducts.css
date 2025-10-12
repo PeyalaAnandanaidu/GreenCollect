@@ -444,17 +444,19 @@
 
 /* Product Content (Text area) */
 .product-content {
-  padding: 18px;
+  padding: 8px;
+  background-color: #0e0e0e !;
   flex: 1;
   display: flex;
   flex-direction: column;
   gap: 12px;
 }
 
-.product-header {
+.product-header-1 {
+  color: #ffffff !important;
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
+  align-items: flex-start; 
   gap: 10px;
   margin-bottom: 6px;
 }
@@ -462,7 +464,7 @@
 .product-name {
   font-size: 1.3rem;
   font-weight: 600;
-  color: #ffffff;
+  color: #f7eded !important;
   margin: 0;
   line-height: 1.2;
   flex: 1;
