@@ -39,7 +39,6 @@ function App() {
 
   return (
     <Router>
-      {/* Navbar component with isLoggedIn prop */}
       <Navbar
         onMenuToggle={handleMenuToggle}
         menuOpen={menuOpen}
@@ -77,7 +76,17 @@ function App() {
               />
             }
           />
-          <Route path="/profile" element={<Profile />} />
+          <Route
+            path="/profile"
+            element={
+              <Profile
+                onTabChange={handleTabChange}
+                activeTab={activeTab}
+                role={userRole}
+                onLogout={handleLogout}
+              />
+            }
+          />
         </Routes>
       </div>
       <Footer />

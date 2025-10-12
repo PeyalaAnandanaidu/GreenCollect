@@ -1,9 +1,18 @@
 import { useEffect, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import './Profile.css';
 import { FaUserCircle, FaEnvelope, FaCoins, FaEdit, FaBell, FaShieldAlt, FaHistory, FaMedal } from 'react-icons/fa';
 
-const Profile: React.FC = () => {
+interface ProfileProps {
+  onTabChange?: (tab: string) => void;
+  activeTab?: string;
+  role?: 'user' | 'collector' | 'admin';
+  onLogout?: () => void;
+}
+
+const Profile: React.FC<ProfileProps> = ({ onTabChange, activeTab = 'profile', role = 'user', onLogout }) => {
   const [mounted, setMounted] = useState(false);
+  const navigate = useNavigate();
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [editorOpen, setEditorOpen] = useState(false);
   const [previewSrc, setPreviewSrc] = useState<string | null>(null);
@@ -19,7 +28,7 @@ const Profile: React.FC = () => {
   const [profile, setProfile] = useState({
     name: 'User',
     email: 'user@example.com',
-    role: 'user',
+    role: role,
     points: 250,
     memberSince: 'Jan 2024',
   });
@@ -29,6 +38,18 @@ const Profile: React.FC = () => {
     const t = setTimeout(() => setMounted(true), 0);
     return () => clearTimeout(t);
   }, []);
+
+  // Set active tab to 'profile' when component mounts
+  useEffect(() => {
+    if (onTabChange) {
+      onTabChange('profile');
+    }
+  }, [onTabChange]);
+
+  // Update profile role when prop changes
+  useEffect(() => {
+    setProfile(prev => ({ ...prev, role: role }));
+  }, [role]);
 
   // Load persisted avatar and profile details
   useEffect(() => {
@@ -51,6 +72,49 @@ const Profile: React.FC = () => {
       return () => clearTimeout(id);
     }
   }, [editorOpen]);
+
+  // Navigation handlers for sidebar - THESE ARE THE KEY FIXES
+  const handleDashboardOverview = () => {
+    if (onTabChange) {
+      onTabChange('overview');
+    }
+    navigate('/dashboard');
+  };
+
+  const handleBookService = () => {
+    if (onTabChange) {
+      onTabChange('bookings');
+    }
+    navigate('/dashboard');
+  };
+
+  const handleEcoStore = () => {
+    if (onTabChange) {
+      onTabChange('products');
+    }
+    navigate('/dashboard');
+  };
+
+  const handleTrackStatus = () => {
+    if (onTabChange) {
+      onTabChange('status');
+    }
+    navigate('/status');
+  };
+
+  const handleTabNavigation = (tab: string, path: string = '/dashboard') => {
+    if (onTabChange) {
+      onTabChange(tab);
+    }
+    navigate(path);
+  };
+
+  const handleLogout = () => {
+    if (onLogout) {
+      onLogout();
+    }
+    navigate('/');
+  };
 
   return (
     <div className="profile-page">

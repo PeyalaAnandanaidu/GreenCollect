@@ -86,6 +86,24 @@ const Navbar: React.FC<NavbarProps> = ({
     onMenuToggle(); // Close the mobile menu
   };
 
+  const handleBookService = () => {
+    onTabChange('bookings');
+    navigate('/dashboard');
+    onMenuToggle(); // Close the mobile menu
+  };
+
+  const handleEcoStore = () => {
+    onTabChange('products');
+    navigate('/dashboard');
+    onMenuToggle(); // Close the mobile menu
+  };
+
+  const handleTrackStatus = () => {
+    onTabChange('status');
+    navigate('/status');
+    onMenuToggle(); // Close the mobile menu
+  };
+
   const handleProfileClick = () => {
     navigate('/profile');
     setDropdownOpen(false);
@@ -185,15 +203,11 @@ const Navbar: React.FC<NavbarProps> = ({
                   role="button"
                   tabIndex={0}
                   title="Go to Eco Store"
-                  onClick={() => {
-                    onTabChange('products');
-                    navigate('/dashboard');
-                  }}
+                  onClick={handleEcoStore}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter' || e.key === ' ') {
                       e.preventDefault();
-                      onTabChange('products');
-                      navigate('/dashboard');
+                      handleEcoStore();
                     }
                   }}
                 >
@@ -341,7 +355,7 @@ const Navbar: React.FC<NavbarProps> = ({
               <>
                 <button
                   className={`mobile-menu-item ${activeTab === 'bookings' ? 'active' : ''}`}
-                  onClick={() => handleTabChange('bookings')}
+                  onClick={handleBookService}
                 >
                   <FaCalendar className="mobile-menu-item-icon" />
                   <span>Book Service</span>
@@ -349,10 +363,7 @@ const Navbar: React.FC<NavbarProps> = ({
 
                 <button
                   className={`mobile-menu-item ${activeTab === 'status' ? 'active' : ''}`}
-                  onClick={() => {
-                    handleTabChange('status');
-                    navigate('/status');
-                  }}
+                  onClick={handleTrackStatus}
                 >
                   <FaListAlt className="mobile-menu-item-icon" />
                   <span>Track Status</span>
@@ -360,7 +371,7 @@ const Navbar: React.FC<NavbarProps> = ({
 
                 <button
                   className={`mobile-menu-item ${activeTab === 'products' ? 'active' : ''}`}
-                  onClick={() => handleTabChange('products')}
+                  onClick={handleEcoStore}
                 >
                   <FaCartArrowDown className="mobile-menu-item-icon" />
                   <span>Eco Store</span>
@@ -372,7 +383,11 @@ const Navbar: React.FC<NavbarProps> = ({
             {role === 'collector' && (
               <button
                 className={`mobile-menu-item ${activeTab === 'requests' ? 'active' : ''}`}
-                onClick={() => handleTabChange('requests')}
+                onClick={() => {
+                  onTabChange('requests');
+                  navigate('/dashboard');
+                  onMenuToggle();
+                }}
               >
                 <FaTruck className="mobile-menu-item-icon" />
                 <span>Service Requests</span>
@@ -384,7 +399,11 @@ const Navbar: React.FC<NavbarProps> = ({
               <>
                 <button
                   className={`mobile-menu-item ${activeTab === 'management' ? 'active' : ''}`}
-                  onClick={() => handleTabChange('management')}
+                  onClick={() => {
+                    onTabChange('management');
+                    navigate('/dashboard');
+                    onMenuToggle();
+                  }}
                 >
                   <FaUsers className="mobile-menu-item-icon" />
                   <span>User Management</span>
@@ -392,7 +411,11 @@ const Navbar: React.FC<NavbarProps> = ({
 
                 <button
                   className={`mobile-menu-item ${activeTab === 'products' ? 'active' : ''}`}
-                  onClick={() => handleTabChange('products')}
+                  onClick={() => {
+                    onTabChange('products');
+                    navigate('/dashboard');
+                    onMenuToggle();
+                  }}
                 >
                   <FaStore className="mobile-menu-item-icon" />
                   <span>Inventory Management</span>
@@ -400,7 +423,11 @@ const Navbar: React.FC<NavbarProps> = ({
 
                 <button
                   className={`mobile-menu-item ${activeTab === 'partners' ? 'active' : ''}`}
-                  onClick={() => handleTabChange('partners')}
+                  onClick={() => {
+                    onTabChange('partners');
+                    navigate('/dashboard');
+                    onMenuToggle();
+                  }}
                 >
                   <FaHandshake className="mobile-menu-item-icon" />
                   <span>Partner Management</span>
@@ -408,7 +435,11 @@ const Navbar: React.FC<NavbarProps> = ({
 
                 <button
                   className={`mobile-menu-item ${activeTab === 'settings' ? 'active' : ''}`}
-                  onClick={() => handleTabChange('settings')}
+                  onClick={() => {
+                    onTabChange('settings');
+                    navigate('/dashboard');
+                    onMenuToggle();
+                  }}
                 >
                   <FaCog className="mobile-menu-item-icon" />
                   <span>Settings</span>
@@ -419,14 +450,22 @@ const Navbar: React.FC<NavbarProps> = ({
                   <h4>Quick Actions</h4>
                   <button 
                     className="quick-action-btn"
-                    onClick={() => handleTabChange('products')}
+                    onClick={() => {
+                      onTabChange('products');
+                      navigate('/dashboard');
+                      onMenuToggle();
+                    }}
                   >
                     <FaStore />
                     <span>Add Part</span>
                   </button>
                   <button 
                     className="quick-action-btn"
-                    onClick={() => handleTabChange('partners')}
+                    onClick={() => {
+                      onTabChange('partners');
+                      navigate('/dashboard');
+                      onMenuToggle();
+                    }}
                   >
                     <FaHandshake />
                     <span>Add Partner</span>
