@@ -39,43 +39,43 @@ function App() {
 
   return (
     <Router>
-     // In your App.tsx, make sure to pass isLoggedIn to Navbar:
-<Navbar
-  onMenuToggle={handleMenuToggle}
-  menuOpen={menuOpen}
-  activeTab={activeTab}
-  onTabChange={handleTabChange}
-  role={userRole}
-  onLogout={handleLogout}
-  isLoggedIn={isLoggedIn} // Add this line
-/>
+      {/* Navbar component with isLoggedIn prop */}
+      <Navbar
+        onMenuToggle={handleMenuToggle}
+        menuOpen={menuOpen}
+        activeTab={activeTab}
+        onTabChange={handleTabChange}
+        role={userRole}
+        onLogout={handleLogout}
+        isLoggedIn={isLoggedIn}
+      />
       <div className="main-content">
         <Routes>
           <Route path="/" element={<Home />} />
-          <Route 
-            path="/login" 
-            element={<Login onLogin={handleLogin} />} 
+          <Route
+            path="/login"
+            element={<Login onLogin={handleLogin} />}
           />
           <Route path="/register" element={<Register />} />
-          <Route 
-            path="/dashboard" 
+          <Route
+            path="/dashboard"
             element={
-              <Dashboard 
+              <Dashboard
                 role={userRole}
                 onLogout={handleLogout}
                 activeTab={activeTab}
                 onTabChange={handleTabChange}
               />
-            } 
+            }
           />
-          <Route 
-            path="/status" 
+          <Route
+            path="/status"
             element={
-              <StatusPage 
+              <StatusPage
                 onTabChange={handleTabChange}
                 activeTab={activeTab}
               />
-            } 
+            }
           />
           <Route path="/profile" element={<Profile />} />
         </Routes>

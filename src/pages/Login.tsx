@@ -1,18 +1,32 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { FaEnvelope, FaLock, FaEye, FaEyeSlash, FaTools, FaArrowRight, FaRecycle, FaLeaf, FaUsers } from 'react-icons/fa';
+import { Link, useNavigate } from 'react-router-dom';
+import { FaEnvelope, FaLock, FaEye, FaEyeSlash, FaArrowRight, FaRecycle, FaLeaf, FaUsers } from 'react-icons/fa';
 import './Login.css';
 
-const Login = () => {
+interface LoginProps {
+  onLogin: (role: 'user' | 'collector' | 'admin') => void;
+}
+
+const Login: React.FC<LoginProps> = ({ onLogin }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
+  const navigate = useNavigate();
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: Connect to backend API
-    console.log('Login attempt:', { email, password, rememberMe });
+    
+    // Simulate login - in real app, this would be an API call
+    let role: 'user' | 'collector' | 'admin' = 'user';
+    
+    // Simple role detection based on email (for demo purposes)
+    if (email.includes('collector')) role = 'collector';
+    if (email.includes('admin')) role = 'admin';
+    
+    // Call the onLogin prop passed from App.tsx
+    onLogin(role);
+    navigate('/dashboard');
   };
 
   const togglePasswordVisibility = () => {
@@ -130,7 +144,20 @@ const Login = () => {
               </button>
             </form>
 
-            
+            <div className="demo-credentials">
+              <h4>Demo Credentials:</h4>
+              <div className="credential-list">
+                <div className="credential">
+                  <strong>User:</strong> user@example.com / any password
+                </div>
+                <div className="credential">
+                  <strong>Collector:</strong> collector@example.com / any password
+                </div>
+                <div className="credential">
+                  <strong>Admin:</strong> admin@example.com / any password
+                </div>
+              </div>
+            </div>
 
             <div className="login-divider">
               <span>New to Janatha Garage?</span>
