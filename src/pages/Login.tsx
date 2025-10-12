@@ -1,45 +1,61 @@
+// src/pages/Login.tsx
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { FaEnvelope, FaLock, FaEye, FaEyeSlash, FaArrowRight, FaRecycle, FaLeaf, FaUsers } from 'react-icons/fa';
+import { useAuth } from '../contexts/AuthContext';
 import './Login.css';
 
-interface LoginProps {
-  onLogin: (role: 'user' | 'collector' | 'admin') => void;
-}
-
-const Login: React.FC<LoginProps> = ({ onLogin }) => {
+const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+  const [loading, setLoading] = useState(false);
+  
   const navigate = useNavigate();
+  const { login } = useAuth();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage('');
+    setLoading(true);
 
     try {
-      const res = await axios.post('http://localhost:4000/api/auth/login', { email, password });
+      console.log('Attempting login...', { email });
+      
+      const res = await axios.post('http://localhost:4000/api/auth/login', { 
+        email, 
+        password 
+      });
+      
+      console.log('Login response:', res.data);
       
       const { user, token } = res.data;
 
-      // Save token in localStorage or sessionStorage based on rememberMe
-      if (rememberMe) {
-        localStorage.setItem('token', token);
-      } else {
-        sessionStorage.setItem('token', token);
+      if (!user || !token) {
+        throw new Error('Invalid response from server');
       }
 
-      // Call onLogin with the actual role
-      onLogin(user.role);
-
+      // Use the auth context to login
+      login(user, token, rememberMe);
+      
       // Redirect to dashboard
       navigate('/dashboard');
+      
     } catch (err: any) {
-      console.error('Login error:', err.response || err);
-      setErrorMessage(err.response?.data?.error || 'Login failed. Please try again.');
+      console.error('Login error details:', err);
+      
+      if (err.response) {
+        setErrorMessage(err.response.data?.error || `Login failed: ${err.response.status}`);
+      } else if (err.request) {
+        setErrorMessage('Cannot connect to server. Please check your connection.');
+      } else {
+        setErrorMessage(err.message || 'Login failed. Please try again.');
+      }
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -81,7 +97,9 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
 
             <form onSubmit={handleLogin} className="login-form">
               <div className="form-group">
-                <label htmlFor="email" className="form-label"><FaEnvelope className="input-icon" /> Email Address</label>
+                <label htmlFor="email" className="form-label">
+                  <FaEnvelope className="input-icon" /> Email Address
+                </label>
                 <input
                   type="email"
                   id="email"
@@ -90,11 +108,14 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
                   className="form-input"
                   placeholder="Enter your email"
                   required
+                  disabled={loading}
                 />
               </div>
 
               <div className="form-group">
-                <label htmlFor="password" className="form-label"><FaLock className="input-icon" /> Password</label>
+                <label htmlFor="password" className="form-label">
+                  <FaLock className="input-icon" /> Password
+                </label>
                 <div className="password-input-container">
                   <input
                     type={showPassword ? "text" : "password"}
@@ -104,8 +125,14 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
                     className="form-input password-input"
                     placeholder="Enter your password"
                     required
+                    disabled={loading}
                   />
-                  <button type="button" className="password-toggle" onClick={togglePasswordVisibility}>
+                  <button 
+                    type="button" 
+                    className="password-toggle" 
+                    onClick={togglePasswordVisibility}
+                    disabled={loading}
+                  >
                     {showPassword ? <FaEyeSlash /> : <FaEye />}
                   </button>
                 </div>
@@ -113,22 +140,41 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
 
               <div className="form-options">
                 <label className="checkbox-container">
-                  <input type="checkbox" checked={rememberMe} onChange={e => setRememberMe(e.target.checked)} />
+                  <input 
+                    type="checkbox" 
+                    checked={rememberMe} 
+                    onChange={e => setRememberMe(e.target.checked)}
+                    disabled={loading}
+                  />
                   <span className="checkmark"></span>
                   Remember me
                 </label>
-                <Link to="/forgot-password" className="forgot-password">Forgot Password?</Link>
+                <Link to="/forgot-password" className="forgot-password">
+                  Forgot Password?
+                </Link>
               </div>
 
-              {errorMessage && <p className="error-message">{errorMessage}</p>}
+              {errorMessage && (
+                <div className="error-message">
+                  <strong>Error:</strong> {errorMessage}
+                </div>
+              )}
 
-              <button type="submit" className="login-button">
-                <span>Sign In to Janatha Garage</span>
-                <FaArrowRight className="button-icon" />
+              <button 
+                type="submit" 
+                className="login-button" 
+                disabled={loading}
+              >
+                <span>
+                  {loading ? 'Signing In...' : 'Sign In to Janatha Garage'}
+                </span>
+                {!loading && <FaArrowRight className="button-icon" />}
               </button>
             </form>
 
-            <div className="login-divider"><span>New to Janatha Garage?</span></div>
+            <div className="login-divider">
+              <span>New to Janatha Garage?</span>
+            </div>
             <div className="signup-link">
               Join our mission for sustainable tomorrow 
               <Link to="/register" className="signup-text">Create Account</Link>

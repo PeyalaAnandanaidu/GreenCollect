@@ -20,10 +20,21 @@ import {
 import './Navbar.css';
 
 interface User {
+  id: string;
   name: string;
   email: string;
   role: 'user' | 'collector' | 'admin';
-  coins?: number;
+  points?: number;
+  memberSince?: string;
+  avatar?: string;
+  collectorInfo?: {
+    phone?: string;
+    address?: string;
+    vehicleType?: string;
+    vehicleNumberPlate?: string;
+    experience?: string;
+    isApproved?: boolean;
+  };
 }
 
 interface NavbarProps {
@@ -51,26 +62,81 @@ const Navbar: React.FC<NavbarProps> = ({
   const [user, setUser] = useState<User | null>(null);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const notificationsRef = useRef<HTMLDivElement | null>(null);
 
-  // Update user state when login status or role changes
+  // Load user data from storage when component mounts or login status changes
   useEffect(() => {
+    const loadUserData = () => {
+      try {
+        const loginMethod = localStorage.getItem('loginMethod') || sessionStorage.getItem('loginMethod');
+        const storage = loginMethod === 'local' ? localStorage : sessionStorage;
+        
+        const userData = storage.getItem('user');
+        const savedAvatar = localStorage.getItem('profile.avatar');
+        
+        if (userData) {
+          const parsedUser = JSON.parse(userData);
+          setUser(parsedUser);
+          console.log('Navbar loaded user:', parsedUser);
+        }
+        
+        if (savedAvatar) {
+          setAvatarUrl(savedAvatar);
+        }
+      } catch (error) {
+        console.error('Error loading user data in Navbar:', error);
+      }
+    };
+
     if (isLoggedIn) {
-      setUser({
-        name: 'John Doe',
-        email: 'john.doe@example.com',
-        role: role,
-        coins: role === 'user' ? 250 : 0,
-      });
+      loadUserData();
     } else {
       setUser(null);
     }
-  }, [isLoggedIn, role]);
+  }, [isLoggedIn]);
+
+  // Also load user data when location changes (in case user logs in on another tab)
+  useEffect(() => {
+    const loadUserData = () => {
+      try {
+        const loginMethod = localStorage.getItem('loginMethod') || sessionStorage.getItem('loginMethod');
+        const storage = loginMethod === 'local' ? localStorage : sessionStorage;
+        
+        const userData = storage.getItem('user');
+        const savedAvatar = localStorage.getItem('profile.avatar');
+        
+        if (userData) {
+          const parsedUser = JSON.parse(userData);
+          setUser(parsedUser);
+        }
+        
+        if (savedAvatar) {
+          setAvatarUrl(savedAvatar);
+        }
+      } catch (error) {
+        console.error('Error loading user data in Navbar:', error);
+      }
+    };
+
+    loadUserData();
+  }, [location.pathname]);
 
   const handleLogout = () => {
     setUser(null);
+    setAvatarUrl(null);
     setDropdownOpen(false);
     setNotificationsOpen(false);
+    
+    // Clear all storage
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    localStorage.removeItem('loginMethod');
+    localStorage.removeItem('profile.avatar');
+    sessionStorage.removeItem('token');
+    sessionStorage.removeItem('user');
+    sessionStorage.removeItem('loginMethod');
+    
     if (onLogout) onLogout();
     navigate('/');
   };
@@ -83,25 +149,25 @@ const Navbar: React.FC<NavbarProps> = ({
   const handleDashboardOverview = () => {
     onTabChange('overview');
     navigate('/dashboard');
-    onMenuToggle(); // Close the mobile menu
+    onMenuToggle();
   };
 
   const handleBookService = () => {
     onTabChange('bookings');
     navigate('/dashboard');
-    onMenuToggle(); // Close the mobile menu
+    onMenuToggle();
   };
 
   const handleEcoStore = () => {
     onTabChange('products');
     navigate('/dashboard');
-    onMenuToggle(); // Close the mobile menu
+    onMenuToggle();
   };
 
   const handleTrackStatus = () => {
     onTabChange('status');
     navigate('/status');
-    onMenuToggle(); // Close the mobile menu
+    onMenuToggle();
   };
 
   const handleProfileClick = () => {
@@ -158,6 +224,24 @@ const Navbar: React.FC<NavbarProps> = ({
     return () => document.removeEventListener('mousedown', handleDocumentClick);
   }, [notificationsOpen, location.pathname]);
 
+  // Get user display name (fallback to role if no name)
+  const getUserDisplayName = () => {
+    if (user?.name) return user.name;
+    return role.charAt(0).toUpperCase() + role.slice(1);
+  };
+
+  // Get user display email
+  const getUserDisplayEmail = () => {
+    if (user?.email) return user.email;
+    return `${role}@janathagarage.com`;
+  };
+
+  // Get user points/coins
+  const getUserPoints = () => {
+    if (user?.points !== undefined) return user.points;
+    return role === 'user' ? 250 : 0;
+  };
+
   return (
     <>
       <nav className="navbar-janatha">
@@ -212,7 +296,7 @@ const Navbar: React.FC<NavbarProps> = ({
                   }}
                 >
                   <FaCoins className="coins-icon" />
-                  <span className="coins-amount">{user?.coins || 250}</span>
+                  <span className="coins-amount">{getUserPoints()}</span>
                   <span className="coins-label">Points</span>
                 </div>
               )}
@@ -271,53 +355,94 @@ const Navbar: React.FC<NavbarProps> = ({
                   className="profile-btn"
                   onClick={() => setDropdownOpen(!dropdownOpen)}
                 >
-                  <FaUserCircle 
-                    className="profile-icon" 
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleProfileClick();
-                    }}
-                  />
-                  <span className="profile-name">{user?.name || 'User'}</span>
-                  <span className="user-role">{role}</span>
+                  <div className="profile-avatar-container">
+                    {avatarUrl ? (
+                      <img 
+                        src={avatarUrl} 
+                        alt="Profile" 
+                        className="profile-avatar"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleProfileClick();
+                        }}
+                      />
+                    ) : (
+                      <FaUserCircle 
+                        className="profile-icon" 
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleProfileClick();
+                        }}
+                      />
+                    )}
+                  </div>
+                  <div className="profile-info">
+                    <span className="profile-name">{getUserDisplayName()}</span>
+                    <span className="user-role">{role}</span>
+                  </div>
                 </button>
 
                 {dropdownOpen && (
                   <div className="dropdown-menu">
                     <div className="user-info">
-                      <span className="user-name">{user?.name || 'User'}</span>
-                      <span className="user-email">
-                        {user?.email || 'user@example.com'}
-                      </span>
-                      <span className="user-role-badge">{role}</span>
+                      <div className="user-avatar-container">
+                        {avatarUrl ? (
+                          <img 
+                            src={avatarUrl} 
+                            alt="Profile" 
+                            className="user-avatar"
+                          />
+                        ) : (
+                          <FaUserCircle className="user-avatar-icon" />
+                        )}
+                      </div>
+                      <div className="user-details">
+                        <span className="user-name">{getUserDisplayName()}</span>
+                        <span className="user-email">
+                          {getUserDisplayEmail()}
+                        </span>
+                        <span className={`user-role-badge ${role}`}>
+                          {role === 'collector' 
+                            ? user?.collectorInfo?.isApproved 
+                              ? 'Approved Collector' 
+                              : 'Pending Collector'
+                            : role.charAt(0).toUpperCase() + role.slice(1)
+                          }
+                        </span>
+                      </div>
                     </div>
                     <button
                       className="dropdown-item"
                       onClick={handleDashboardOverview}
                     >
+                      <FaChartLine className="dropdown-item-icon" />
                       Dashboard
                     </button>
                     <button
                       className="dropdown-item"
                       onClick={handleProfileClick}
                     >
+                      <FaUserCircle className="dropdown-item-icon" />
                       My Profile
                     </button>
                     {role === 'user' && (
                       <button
                         className="dropdown-item"
                         onClick={() => {
-                          // Navigate to rewards page
+                          handleEcoStore();
                           setDropdownOpen(false);
                         }}
                       >
+                        <FaCoins className="dropdown-item-icon" />
                         My Rewards
                       </button>
                     )}
+                    <div className="dropdown-divider"></div>
                     <button
                       className="dropdown-item logout-btn"
                       onClick={handleLogout}
                     >
+                      <FaSignOutAlt className="dropdown-item-icon" />
                       Logout
                     </button>
                   </div>
@@ -335,13 +460,31 @@ const Navbar: React.FC<NavbarProps> = ({
       {shouldShowLoggedInUI && (
         <div className={`mobile-menu ${menuOpen ? 'menu-open' : ''}`}>
           <div className="mobile-menu-header">
-            <div className="mobile-menu-brand">
-              <span className="mobile-menu-title">Janatha Garage</span>
+            <div className="mobile-user-info">
+              <div className="mobile-user-avatar">
+                {avatarUrl ? (
+                  <img src={avatarUrl} alt="Profile" className="mobile-avatar-img" />
+                ) : (
+                  <FaUserCircle className="mobile-avatar-icon" />
+                )}
+              </div>
+              <div className="mobile-user-details">
+                <span className="mobile-user-name">{getUserDisplayName()}</span>
+                <span className="mobile-user-email">{getUserDisplayEmail()}</span>
+                <span className={`mobile-user-role ${role}`}>
+                  {role === 'collector' 
+                    ? user?.collectorInfo?.isApproved 
+                      ? 'Approved Collector' 
+                      : 'Pending Collector'
+                    : role.charAt(0).toUpperCase() + role.slice(1)
+                  }
+                </span>
+              </div>
             </div>
           </div>
 
           <nav className="mobile-menu-nav">
-            {/* Common for all roles - Updated Dashboard Overview button */}
+            {/* Common for all roles */}
             <button
               className={`mobile-menu-item ${activeTab === 'overview' ? 'active' : ''}`}
               onClick={handleDashboardOverview}
@@ -432,47 +575,17 @@ const Navbar: React.FC<NavbarProps> = ({
                   <FaHandshake className="mobile-menu-item-icon" />
                   <span>Partner Management</span>
                 </button>
-
-                <button
-                  className={`mobile-menu-item ${activeTab === 'settings' ? 'active' : ''}`}
-                  onClick={() => {
-                    onTabChange('settings');
-                    navigate('/dashboard');
-                    onMenuToggle();
-                  }}
-                >
-                  <FaCog className="mobile-menu-item-icon" />
-                  <span>Settings</span>
-                </button>
-
-                {/* Admin Quick Actions */}
-                <div className="admin-quick-actions">
-                  <h4>Quick Actions</h4>
-                  <button 
-                    className="quick-action-btn"
-                    onClick={() => {
-                      onTabChange('products');
-                      navigate('/dashboard');
-                      onMenuToggle();
-                    }}
-                  >
-                    <FaStore />
-                    <span>Add Part</span>
-                  </button>
-                  <button 
-                    className="quick-action-btn"
-                    onClick={() => {
-                      onTabChange('partners');
-                      navigate('/dashboard');
-                      onMenuToggle();
-                    }}
-                  >
-                    <FaHandshake />
-                    <span>Add Partner</span>
-                  </button>
-                </div>
               </>
             )}
+
+            {/* Profile button for all roles */}
+            <button
+              className="mobile-menu-item"
+              onClick={handleProfileClick}
+            >
+              <FaUserCircle className="mobile-menu-item-icon" />
+              <span>My Profile</span>
+            </button>
           </nav>
 
           <div className="mobile-menu-logout">

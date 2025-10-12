@@ -42,11 +42,10 @@ mongoose.connect(MONGO_URI, {
 app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/users', userRoutes);
-<<<<<<< HEAD
 app.use('/api/admin', require('./routes/admin'));
-=======
+
 app.use('/api/notifications', notificationRoutes);
->>>>>>> f4e5f4f7fd9a90ada9ed262a1792c0daea6bd10d
+
 // Protected example route
 const jwt = require('jsonwebtoken');
 const JWT_SECRET = process.env.JWT_SECRET || 'secret';

@@ -1,5 +1,6 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { useState } from 'react';
+import { AuthProvider, useAuth } from './contexts/AuthContext'; // Import AuthProvider
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import Home from './pages/Home';
@@ -11,11 +12,11 @@ import StatusPage from './pages/StatusPage';
 import RedeemCheckout from './pages/RedeemCheckout';
 import OrderSuccess from './pages/OrderSuccess';
 
-function App() {
+// Create a wrapper component that uses the auth context
+function AppContent() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('overview');
-  const [userRole, setUserRole] = useState<'user' | 'collector' | 'admin'>('admin');
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const { user, logout } = useAuth(); // Get user and logout from auth context
 
   const handleMenuToggle = () => {
     setMenuOpen(!menuOpen);
@@ -26,15 +27,12 @@ function App() {
     setMenuOpen(false); // Close menu when tab changes
   };
 
-  const handleLogin = (role: 'user' | 'collector' | 'admin') => {
-    setUserRole(role);
-    setIsLoggedIn(true);
+  const handleLoginSuccess = () => {
     setActiveTab('overview');
   };
 
   const handleLogout = () => {
-    setIsLoggedIn(false);
-    setUserRole('user');
+    logout(); // Use the logout from auth context
     setActiveTab('overview');
     setMenuOpen(false);
   };
@@ -46,23 +44,23 @@ function App() {
         menuOpen={menuOpen}
         activeTab={activeTab}
         onTabChange={handleTabChange}
-        role={userRole}
+        role={user?.role || 'user'} // Use role from auth context
         onLogout={handleLogout}
-        isLoggedIn={isLoggedIn}
+        isLoggedIn={!!user} // Use user existence for login status
       />
       <div className="main-content-1">
         <Routes>
           <Route path="/" element={<Home />} />
           <Route
             path="/login"
-            element={<Login onLogin={handleLogin} />}
+            element={<Login onLogin={handleLoginSuccess} />}
           />
           <Route path="/register" element={<Register />} />
           <Route
             path="/dashboard"
             element={
               <Dashboard
-                role={userRole}
+                role={user?.role || 'user'}
                 onLogout={handleLogout}
                 activeTab={activeTab}
               />
@@ -83,8 +81,9 @@ function App() {
               <Profile
                 onTabChange={handleTabChange}
                 activeTab={activeTab}
-                role={userRole}
+                role={user?.role || 'user'}
                 onLogout={handleLogout}
+                user={user} // Pass user data to profile
               />
             }
           />
@@ -94,6 +93,14 @@ function App() {
       </div>
       <Footer />
     </Router>
+  );
+}
+
+function App() {
+  return (
+    <AuthProvider>
+      <AppContent />
+    </AuthProvider>
   );
 }
 
