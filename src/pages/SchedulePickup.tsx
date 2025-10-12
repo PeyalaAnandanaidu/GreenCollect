@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import './SchedulePickup.css';
 import { FaCalendar, FaTrash, FaMapMarkerAlt, FaCheckCircle, FaTimes, FaCoins } from 'react-icons/fa';
 
@@ -15,6 +15,12 @@ const SchedulePickup: React.FC<SchedulePickupProps> = ({ onClose }) => {
     specialInstructions: '',
     contactNumber: ''
   });
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    const t = setTimeout(() => setMounted(true), 0);
+    return () => clearTimeout(t);
+  }, []);
 
   const wasteTypes = [
     { value: 'plastic', label: 'Plastic', color: '#ff9800' },
@@ -58,15 +64,12 @@ const SchedulePickup: React.FC<SchedulePickupProps> = ({ onClose }) => {
     return weightOption ? weightOption.coins : 0;
   };
 
-  const getWasteTypeColor = () => {
-    const wasteType = wasteTypes.find(type => type.value === formData.wasteType);
-    return wasteType ? wasteType.color : '#ff9800';
-  };
+  // removed unused getWasteTypeColor to keep build clean
 
   return (
     <div className="schedule-pickup-overlay">
       <div className="schedule-pickup-modal">
-        <div className="schedule-pickup-header">
+        <div className={`schedule-pickup-header ${mounted ? 'animate-in' : ''}`}>
           <div className="header-content">
             <FaCalendar className="header-icon" />
             <div>
@@ -80,7 +83,7 @@ const SchedulePickup: React.FC<SchedulePickupProps> = ({ onClose }) => {
         </div>
 
         <div className="schedule-pickup-content">
-          <form onSubmit={handleSubmit} className="schedule-pickup-form">
+          <form onSubmit={handleSubmit} className={`schedule-pickup-form ${mounted ? 'animate-in delay-1' : ''}`}>
             {/* Pickup Date */}
             <div className="form-group">
               <label htmlFor="pickupDate">
@@ -202,7 +205,7 @@ const SchedulePickup: React.FC<SchedulePickupProps> = ({ onClose }) => {
           </form>
 
           {/* Estimated Rewards Info */}
-          <div className="rewards-info">
+          <div className={`rewards-info ${mounted ? 'animate-in delay-2' : ''}`}>
             <div className="rewards-card">
               <div className="rewards-header">
                 <FaCoins className="rewards-icon" />

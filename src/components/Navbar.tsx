@@ -1,5 +1,5 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   FaUserCircle,
   FaBell,
@@ -9,16 +9,12 @@ import {
   FaChartLine,
   FaCalendar,
   FaListAlt,
-  FaShoppingBag,
   FaTruck,
   FaUsers,
-  FaRecycle,
   FaSignOutAlt,
   FaHandshake,
   FaStore,
   FaCog,
-  FaTools,
-  FaCar,
   FaCartArrowDown,
 } from 'react-icons/fa';
 import './Navbar.css';
@@ -53,35 +49,10 @@ const Navbar: React.FC<NavbarProps> = ({
   const [user, setUser] = useState<User | null>(null);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
+  const notificationsRef = useRef<HTMLDivElement | null>(null);
 
   // Simulate login for different roles
-  const handleUserLogin = () => {
-    setUser({
-      name: 'Anand',
-      email: 'anand@example.com',
-      role: 'user',
-      coins: 250,
-    });
-    navigate('/dashboard');
-  };
-
-  const handleCollectorLogin = () => {
-    setUser({
-      name: 'Collector',
-      email: 'collector@example.com',
-      role: 'collector',
-    });
-    navigate('/dashboard');
-  };
-
-  const handleAdminLogin = () => {
-    setUser({
-      name: 'Admin',
-      email: 'admin@example.com',
-      role: 'admin',
-    });
-    navigate('/dashboard');
-  };
+  // Login handlers can be implemented in auth flows; removed unused stubs to keep build clean
 
   const handleLogout = () => {
     setUser(null);
@@ -120,6 +91,24 @@ const Navbar: React.FC<NavbarProps> = ({
   const unreadNotifications = notifications.filter((n) => !n.read).length;
 
   const isLoggedIn = !!user || location.pathname === '/dashboard';
+
+  // Close notifications when clicking anywhere outside the notifications menu while on dashboard
+  useEffect(() => {
+    const handleDocumentClick = (e: MouseEvent) => {
+      const onDashboard = location.pathname.startsWith('/dashboard');
+      if (!onDashboard) return;
+      if (
+        notificationsOpen &&
+        notificationsRef.current &&
+        e.target instanceof Node &&
+        !notificationsRef.current.contains(e.target)
+      ) {
+        setNotificationsOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleDocumentClick);
+    return () => document.removeEventListener('mousedown', handleDocumentClick);
+  }, [notificationsOpen, location.pathname]);
 
   return (
     <>
@@ -162,7 +151,23 @@ const Navbar: React.FC<NavbarProps> = ({
           {isLoggedIn && (
             <div className="user-section">
               {role === 'user' && (
-                <div className="coins-display">
+                <div
+                  className="coins-display"
+                  role="button"
+                  tabIndex={0}
+                  title="Go to Eco Store"
+                  onClick={() => {
+                    onTabChange('products');
+                    navigate('/dashboard');
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      onTabChange('products');
+                      navigate('/dashboard');
+                    }
+                  }}
+                >
                   <FaCoins className="coins-icon" />
                   <span className="coins-amount">{user?.coins || 250}</span>
                   <span className="coins-label">Points</span>
@@ -170,7 +175,7 @@ const Navbar: React.FC<NavbarProps> = ({
               )}
 
               {/* Notifications */}
-              <div className="notifications-dropdown">
+              <div className="notifications-dropdown" ref={notificationsRef}>
                 <button
                   className="notification-btn"
                   onClick={() => setNotificationsOpen(!notificationsOpen)}
@@ -223,7 +228,13 @@ const Navbar: React.FC<NavbarProps> = ({
                   className="profile-btn"
                   onClick={() => setDropdownOpen(!dropdownOpen)}
                 >
-                  <FaUserCircle className="profile-icon" />
+                  <FaUserCircle
+                    className="profile-icon"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      navigate('/profile');
+                    }}
+                  />
                   <span className="profile-name">{user?.name || 'User'}</span>
                   <span className="user-role">{role}</span>
                 </button>
@@ -309,7 +320,10 @@ const Navbar: React.FC<NavbarProps> = ({
 
               <button
                 className={`mobile-menu-item ${activeTab === 'status' ? 'active' : ''}`}
-                onClick={() => handleTabChange('status')}
+                onClick={() => {
+                  handleTabChange('status');
+                  navigate('/status');
+                }}
               >
                 <FaListAlt className="mobile-menu-item-icon" />
                 <span>Track Status</span>

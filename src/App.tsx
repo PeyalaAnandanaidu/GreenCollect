@@ -5,13 +5,14 @@ import Footer from './components/Footer';
 import Home from './pages/Home';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import Profile from './pages/Profile';
 import Dashboard from './pages/Dashboard';
 import StatusPage from './pages/StatusPage';
 
 function App() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('overview');
-  const [userRole, setUserRole] = useState<'user' | 'collector' | 'admin'>('user');
+  const [userRole, setUserRole] = useState<'user' | 'collector' | 'admin'>('admin');
   const handleMenuToggle = () => {
     setMenuOpen(!menuOpen);
   };
@@ -55,6 +56,7 @@ function App() {
             } 
           />
           <Route path="/status" element={<StatusPage />} />
+          <Route path="/profile" element={<Profile />} />
         </Routes>
       </div>
       <Footer />

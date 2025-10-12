@@ -357,7 +357,7 @@ const SustainableProducts: React.FC = () => {
                     filteredProducts.map((product) => (
                         <div key={product.id} className="product-card">
                             <div className="product-image-container">
-                                <div className="product-image">
+                                <div className="productImage">
                                     <img src={product.image} alt={product.name} />
                                     <div className="image-overlay">
                                         <button 

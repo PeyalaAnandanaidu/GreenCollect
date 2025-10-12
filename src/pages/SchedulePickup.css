@@ -14,16 +14,23 @@
   backdrop-filter: blur(5px);
 }
 
+/* Entry animations like Home.css */
+.animate-in { opacity: 1; transform: translateY(0); transition: opacity .6s ease, transform .6s ease; }
+.schedule-pickup-header, .schedule-pickup-form, .rewards-info { opacity: 0; transform: translateY(12px); }
+.delay-1 { transition-delay: .08s; }
+.delay-2 { transition-delay: .16s; }
+.delay-3 { transition-delay: .24s; }
+
 .schedule-pickup-modal {
-  background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%);
+  background: linear-gradient(180deg, #0f0f0f 0%, #171717 100%);
   border-radius: 20px;
-  border: 1px solid rgba(255, 152, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   width: 100%;
   max-width: 500px;
   max-height: 90vh;
   overflow-y: auto;
   animation: modalSlideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.55);
 }
 
 @keyframes modalSlideIn {
@@ -42,8 +49,8 @@
   justify-content: space-between;
   align-items: flex-start;
   padding: 25px 30px;
-  border-bottom: 1px solid rgba(255, 152, 0, 0.2);
-  background: rgba(255, 152, 0, 0.05);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.04);
   position: relative;
 }
 
@@ -54,7 +61,7 @@
   left: 0;
   right: 0;
   height: 3px;
-  background: linear-gradient(90deg, #ff9800, #ffb74d);
+  background: linear-gradient(90deg, #ffcc00, #ffb300);
   border-radius: 20px 20px 0 0;
 }
 
@@ -67,7 +74,7 @@
 
 .header-icon {
   font-size: 2rem;
-  color: #ff9800;
+  color: #ffcc00;
   margin-top: 5px;
 }
 
@@ -76,7 +83,7 @@
   font-size: 1.5rem;
   font-weight: 700;
   color: #ffffff;
-  background: linear-gradient(135deg, #ff9800, #ffb74d);
+  background: linear-gradient(135deg, #ffcc00, #ffb300);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -90,8 +97,8 @@
 
 .close-btn {
   background: rgba(255, 152, 0, 0.1);
-  border: 1px solid rgba(255, 152, 0, 0.3);
-  color: #ff9800;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  color: #ffcc00;
   font-size: 1.2rem;
   cursor: pointer;
   padding: 8px;
@@ -106,7 +113,7 @@
 }
 
 .close-btn:hover {
-  background: rgba(255, 152, 0, 0.2);
+  background: rgba(255, 204, 0, 0.15);
   transform: rotate(90deg);
 }
 
@@ -128,12 +135,12 @@
   gap: 10px;
   margin-bottom: 8px;
   font-weight: 600;
-  color: #ff9800;
+  color: #ffcc00;
   font-size: 0.95rem;
 }
 
 .input-icon {
-  color: #ff9800;
+  color: #ffcc00;
   font-size: 1rem;
   opacity: 0.8;
 }
@@ -144,7 +151,7 @@
   width: 100%;
   padding: 12px 16px;
   background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 152, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.14);
   border-radius: 10px;
   font-size: 1rem;
   color: #ffffff;
@@ -162,9 +169,9 @@
 .form-group select:focus,
 .form-group textarea:focus {
   outline: none;
-  border-color: #ff9800;
+  border-color: rgba(255,255,255,0.32);
   background: rgba(255, 255, 255, 0.08);
-  box-shadow: 0 0 0 3px rgba(255, 152, 0, 0.1);
+  box-shadow: 0 0 0 3px rgba(255, 204, 0, 0.12);
 }
 
 .form-group textarea {
@@ -189,7 +196,7 @@
   gap: 15px;
   margin-top: 30px;
   padding-top: 20px;
-  border-top: 1px solid rgba(255, 152, 0, 0.1);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .cancel-btn,
@@ -211,7 +218,7 @@
 .cancel-btn {
   background: rgba(255, 255, 255, 0.05);
   color: #b0b0b0;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.16);
 }
 
 .cancel-btn:hover {
@@ -220,15 +227,15 @@
 }
 
 .submit-btn {
-  background: linear-gradient(135deg, #ff9800, #ffb74d);
+  background: linear-gradient(135deg, #ffcc00, #ffb300);
   color: #000000;
   font-weight: 700;
-  box-shadow: 0 4px 15px rgba(255, 152, 0, 0.3);
+  box-shadow: 0 4px 15px rgba(255, 204, 0, 0.3);
 }
 
 .submit-btn:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(255, 152, 0, 0.4);
+  box-shadow: 0 6px 20px rgba(255, 204, 0, 0.4);
 }
 
 .submit-btn:disabled {
@@ -249,8 +256,8 @@
 }
 
 .rewards-card {
-  background: linear-gradient(135deg, rgba(255, 152, 0, 0.1), rgba(255, 183, 77, 0.05));
-  border: 1px solid rgba(255, 152, 0, 0.3);
+  background: linear-gradient(135deg, rgba(255, 204, 0, 0.08), rgba(255, 179, 0, 0.05));
+  border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 15px;
   padding: 20px;
   position: relative;
@@ -264,7 +271,7 @@
   left: 0;
   right: 0;
   height: 3px;
-  background: linear-gradient(90deg, #ff9800, #ffb74d);
+  background: linear-gradient(90deg, #ffcc00, #ffb300);
 }
 
 .rewards-header {
@@ -276,12 +283,12 @@
 
 .rewards-icon {
   font-size: 1.3rem;
-  color: #ffb74d;
+  color: #ffcc00;
 }
 
 .rewards-card h4 {
   margin: 0;
-  color: #ff9800;
+  color: #ffcc00;
   font-size: 1.1rem;
   font-weight: 600;
 }
@@ -295,7 +302,7 @@
   justify-content: space-between;
   align-items: center;
   padding: 10px 0;
-  border-bottom: 1px solid rgba(255, 152, 0, 0.2);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .reward-item:last-child {
@@ -320,7 +327,7 @@
   align-items: center;
   padding-top: 12px;
   margin-top: 12px;
-  border-top: 2px solid rgba(255, 152, 0, 0.3);
+  border-top: 2px solid rgba(255, 255, 255, 0.12);
   color: #ffffff;
 }
 
@@ -331,7 +338,7 @@
 
 .rewards-note {
   background: rgba(255, 183, 77, 0.1);
-  border: 1px solid rgba(255, 183, 77, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 8px;
   padding: 12px 15px;
   text-align: center;

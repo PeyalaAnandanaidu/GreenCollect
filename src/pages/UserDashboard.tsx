@@ -1,15 +1,15 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import './UserDashboard.css';
 import {
-    FaTrash, FaTruck, FaCheckCircle, FaUsers,
+    FaTrash, FaTruck, FaCheckCircle,
     FaCalendar, FaMapMarkerAlt, FaChevronRight, FaSearch,
-    FaListAlt, FaRecycle, FaClock, FaCheck,
+    FaListAlt, FaClock, FaCheck,
     FaTimesCircle, FaTruck as FaTruckIcon,
     FaTools, FaLeaf, FaCoins, FaChartLine,
     FaBolt, FaShieldAlt, FaRocket, FaStar
 } from 'react-icons/fa';
 import {
-    LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
+    XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
     PieChart, Pie, Cell, Legend, AreaChart, Area, BarChart, Bar
 } from 'recharts';
 import SchedulePickup from './SchedulePickup';
@@ -93,6 +93,12 @@ const UserDashboard: React.FC<UserDashboardProps> = ({ activeTab }) => {
     const [showSchedulePickup, setShowSchedulePickup] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
     const [statusFilter, setStatusFilter] = useState<string>('all');
+    const [mounted, setMounted] = useState(false);
+
+    useEffect(() => {
+        const t = setTimeout(() => setMounted(true), 0);
+        return () => clearTimeout(t);
+    }, []);
 
     const statusColor = (status: string) => {
         switch (status) {
@@ -578,9 +584,9 @@ const UserDashboard: React.FC<UserDashboardProps> = ({ activeTab }) => {
                 {/* Overview Tab */}
                 {activeTab === 'overview' && (
                     <div className="overview-grid">
-                        <StatsCards />
-                        <Charts />
-                        <RecentActivity />
+                        <div className={`section-block ${mounted ? 'animate-in' : ''}`}><StatsCards /></div>
+                        <div className={`section-block ${mounted ? 'animate-in delay-1' : ''}`}><Charts /></div>
+                        <div className={`section-block ${mounted ? 'animate-in delay-2' : ''}`}><RecentActivity /></div>
                     </div>
                 )}
 
