@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import axios from 'axios';
 import { FaEnvelope, FaLock, FaEye, FaEyeSlash, FaArrowRight, FaRecycle, FaLeaf, FaUsers } from 'react-icons/fa';
 import './Login.css';
 
@@ -12,30 +13,40 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
   const navigate = useNavigate();
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    // Simulate login - in real app, this would be an API call
-    let role: 'user' | 'collector' | 'admin' = 'user';
-    
-    // Simple role detection based on email (for demo purposes)
-    if (email.includes('collector')) role = 'collector';
-    if (email.includes('admin')) role = 'admin';
-    
-    // Call the onLogin prop passed from App.tsx
-    onLogin(role);
-    navigate('/dashboard');
+    setErrorMessage('');
+
+    try {
+      const res = await axios.post('http://localhost:4000/api/auth/login', { email, password });
+      
+      const { user, token } = res.data;
+
+      // Save token in localStorage or sessionStorage based on rememberMe
+      if (rememberMe) {
+        localStorage.setItem('token', token);
+      } else {
+        sessionStorage.setItem('token', token);
+      }
+
+      // Call onLogin with the actual role
+      onLogin(user.role);
+
+      // Redirect to dashboard
+      navigate('/dashboard');
+    } catch (err: any) {
+      console.error('Login error:', err.response || err);
+      setErrorMessage(err.response?.data?.error || 'Login failed. Please try again.');
+    }
   };
 
-  const togglePasswordVisibility = () => {
-    setShowPassword(!showPassword);
-  };
+  const togglePasswordVisibility = () => setShowPassword(!showPassword);
 
   return (
     <div className="login-container">
-      {/* Background Animation */}
       <div className="login-background">
         <div className="floating-shapes">
           <div className="shape shape-1"></div>
@@ -45,35 +56,22 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
       </div>
 
       <div className="login-content">
-        {/* Left Side - Brand Section */}
         <div className="login-brand-section">
           <div className="brand-container">
-            <div className="brand-icon">
-              <FaRecycle className="icon" />
-            </div>
+            <div className="brand-icon"><FaRecycle className="icon" /></div>
             <h1 className="brand-title">Janatha Garage</h1>
             <p className="brand-tagline">the people workshop for sustainable tomorrow</p>
             <p className="brand-subtitle">
               Transforming waste into resources, building a cleaner future together
             </p>
             <div className="brand-features">
-              <div className="feature">
-                <FaRecycle className="feature-icon" />
-                <span>Smart Waste Collection</span>
-              </div>
-              <div className="feature">
-                <FaLeaf className="feature-icon" />
-                <span>Eco-Rewards System</span>
-              </div>
-              <div className="feature">
-                <FaUsers className="feature-icon" />
-                <span>Community Driven</span>
-              </div>
+              <div className="feature"><FaRecycle className="feature-icon" /><span>Smart Waste Collection</span></div>
+              <div className="feature"><FaLeaf className="feature-icon" /><span>Eco-Rewards System</span></div>
+              <div className="feature"><FaUsers className="feature-icon" /><span>Community Driven</span></div>
             </div>
           </div>
         </div>
 
-        {/* Right Side - Login Form */}
         <div className="login-form-section">
           <div className="login-form-container">
             <div className="form-header">
@@ -83,10 +81,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
 
             <form onSubmit={handleLogin} className="login-form">
               <div className="form-group">
-                <label htmlFor="email" className="form-label">
-                  <FaEnvelope className="input-icon" />
-                  Email Address
-                </label>
+                <label htmlFor="email" className="form-label"><FaEnvelope className="input-icon" /> Email Address</label>
                 <input
                   type="email"
                   id="email"
@@ -99,10 +94,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
               </div>
 
               <div className="form-group">
-                <label htmlFor="password" className="form-label">
-                  <FaLock className="input-icon" />
-                  Password
-                </label>
+                <label htmlFor="password" className="form-label"><FaLock className="input-icon" /> Password</label>
                 <div className="password-input-container">
                   <input
                     type={showPassword ? "text" : "password"}
@@ -113,11 +105,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
                     placeholder="Enter your password"
                     required
                   />
-                  <button
-                    type="button"
-                    className="password-toggle"
-                    onClick={togglePasswordVisibility}
-                  >
+                  <button type="button" className="password-toggle" onClick={togglePasswordVisibility}>
                     {showPassword ? <FaEyeSlash /> : <FaEye />}
                   </button>
                 </div>
@@ -125,18 +113,14 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
 
               <div className="form-options">
                 <label className="checkbox-container">
-                  <input
-                    type="checkbox"
-                    checked={rememberMe}
-                    onChange={e => setRememberMe(e.target.checked)}
-                  />
+                  <input type="checkbox" checked={rememberMe} onChange={e => setRememberMe(e.target.checked)} />
                   <span className="checkmark"></span>
                   Remember me
                 </label>
-                <Link to="/forgot-password" className="forgot-password">
-                  Forgot Password?
-                </Link>
+                <Link to="/forgot-password" className="forgot-password">Forgot Password?</Link>
               </div>
+
+              {errorMessage && <p className="error-message">{errorMessage}</p>}
 
               <button type="submit" className="login-button">
                 <span>Sign In to Janatha Garage</span>
@@ -144,41 +128,10 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
               </button>
             </form>
 
-            <div className="demo-credentials">
-              <h4>Demo Credentials:</h4>
-              <div className="credential-list">
-                <div className="credential">
-                  <strong>User:</strong> user@example.com / any password
-                </div>
-                <div className="credential">
-                  <strong>Collector:</strong> collector@example.com / any password
-                </div>
-                <div className="credential">
-                  <strong>Admin:</strong> admin@example.com / any password
-                </div>
-              </div>
-            </div>
-
-            <div className="login-divider">
-              <span>New to Janatha Garage?</span>
-            </div>
-
+            <div className="login-divider"><span>New to Janatha Garage?</span></div>
             <div className="signup-link">
               Join our mission for sustainable tomorrow 
-              <Link to="/register" className="signup-text">
-                Create Account
-              </Link>
-            </div>
-
-            <div className="community-stats">
-              <div className="stat">
-                <strong>1,000+</strong>
-                <span>Community Members</span>
-              </div>
-              <div className="stat">
-                <strong>5,000+</strong>
-                <span>Kg Waste Recycled</span>
-              </div>
+              <Link to="/register" className="signup-text">Create Account</Link>
             </div>
           </div>
         </div>

@@ -1,14 +1,15 @@
 import './Register.css';
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { FaUser, FaEnvelope, FaLock, FaPhone, FaMapMarkerAlt, FaTruck, FaIdCard, FaClipboard, FaCheck, FaArrowRight, FaTools, FaRecycle, FaUsers } from 'react-icons/fa';
+import axios from 'axios';
+import { FaUser, FaEnvelope, FaLock, FaPhone, FaMapMarkerAlt, FaTruck, FaIdCard, FaClipboard, FaCheck, FaArrowRight, FaRecycle, FaUsers } from 'react-icons/fa';
 
 const Register = () => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [role, setRole] = useState('user'); // default role
-  
+
   // Collector specific fields
   const [phone, setPhone] = useState('');
   const [address, setAddress] = useState('');
@@ -16,38 +17,38 @@ const Register = () => {
   const [vehicleNumber, setVehicleNumber] = useState('');
   const [experience, setExperience] = useState('');
 
-  const handleRegister = (e: React.FormEvent) => {
+  const [message, setMessage] = useState('');
+
+  const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (role === 'collector') {
-      // Collector registration data
-      const collectorData = {
-        name,
-        email,
-        password,
-        role,
-        phone,
-        address,
-        vehicleType,
-        vehicleNumber,
-        experience,
-        status: 'pending' // Collector requests need admin approval
-      };
-      alert(`Collector Registration Submitted!\n\nWe've received your application. Please wait for admin approval.\n\nName: ${name}\nEmail: ${email}\nPhone: ${phone}\nVehicle: ${vehicleType} (${vehicleNumber})`);
-      console.log('Collector Registration:', collectorData);
-    } else {
-      // User registration data
-      const userData = {
-        name,
-        email,
-        password,
-        role
-      };
-      alert(`User Registration Successful!\n\nWelcome ${name}! You can now login and start using our services.`);
-      console.log('User Registration:', userData);
+
+    try {
+      let payload: any = { name, email, password, role };
+
+      if (role === 'collector') {
+        payload.collectorInfo = {
+          phone,
+          address,
+          vehicleType,
+          vehicleNumberPlate: vehicleNumber,
+          experience
+        };
+      }
+
+      const res = await axios.post('http://localhost:4000/api/auth/register', payload);
+
+      if (res.status === 201) {
+        if (role === 'collector') {
+          alert(`Collector Registration Submitted!\n\nYour application will be reviewed by admin.`);
+        } else {
+          alert(`User Registration Successful!\n\nWelcome ${name}! You can now login.`);
+        }
+        console.log('Registration response:', res.data);
+      }
+    } catch (err: any) {
+      console.error('Registration error:', err.response || err);
+      setMessage(err.response?.data?.error || 'Registration failed');
     }
-    
-    // TODO: Connect to backend API
   };
 
   const isCollector = role === 'collector';
@@ -289,7 +290,7 @@ const Register = () => {
                       value={experience}
                       onChange={e => setExperience(e.target.value)}
                       className="form-input"
-                      placeholder="Tell us about your experience in waste collection or environmental services"
+                      placeholder="Tell us about your experience"
                       rows={3}
                       required={isCollector}
                     />
@@ -313,6 +314,8 @@ const Register = () => {
               </button>
             </form>
 
+            {message && <p className="error-message">{message}</p>}
+
             <div className="login-link">
               Already part of our community? 
               <Link to="/login" className="login-text">
@@ -320,20 +323,6 @@ const Register = () => {
               </Link>
             </div>
 
-            <div className="community-benefits">
-              <div className="benefit">
-                <FaCheck className="benefit-icon" />
-                <span>Instant account activation for community members</span>
-              </div>
-              <div className="benefit">
-                <FaCheck className="benefit-icon" />
-                <span>Start earning eco-rewards immediately</span>
-              </div>
-              <div className="benefit">
-                <FaCheck className="benefit-icon" />
-                <span>Join 1,000+ sustainable champions</span>
-              </div>
-            </div>
           </div>
         </div>
       </div>

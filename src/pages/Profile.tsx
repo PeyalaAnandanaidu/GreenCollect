@@ -1,16 +1,40 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './Profile.css';
-import { FaUserCircle, FaEnvelope, FaCoins, FaEdit, FaBell, FaShieldAlt, FaHistory, FaMedal } from 'react-icons/fa';
+import { FaUserCircle, FaEnvelope, FaCoins, FaEdit, FaBell, FaShieldAlt, FaHistory, FaMedal, FaPhone, FaMapMarkerAlt, FaTruck } from 'react-icons/fa';
+
+interface User {
+  id: string;
+  name: string;
+  email: string;
+  role: 'user' | 'collector' | 'admin';
+  points?: number;
+  memberSince?: string;
+  collectorInfo?: {
+    phone?: string;
+    address?: string;
+    vehicleType?: string;
+    vehicleNumberPlate?: string;
+    experience?: string;
+    isApproved?: boolean;
+  };
+}
 
 interface ProfileProps {
   onTabChange?: (tab: string) => void;
   activeTab?: string;
   role?: 'user' | 'collector' | 'admin';
   onLogout?: () => void;
+  user?: User | null;
 }
 
-const Profile: React.FC<ProfileProps> = ({ onTabChange, activeTab = 'profile', role = 'user', onLogout }) => {
+const Profile: React.FC<ProfileProps> = ({ 
+  onTabChange, 
+  activeTab = 'profile', 
+  role = 'user', 
+  onLogout,
+  user 
+}) => {
   const [mounted, setMounted] = useState(false);
   const navigate = useNavigate();
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
@@ -25,15 +49,108 @@ const Profile: React.FC<ProfileProps> = ({ onTabChange, activeTab = 'profile', r
   const viewport = 220;
   const hiddenCanvasRef = useRef<HTMLCanvasElement | null>(null);
   const [profileEditOpen, setProfileEditOpen] = useState(false);
-  const [profile, setProfile] = useState({
-    name: 'User',
-    email: 'user@example.com',
-    role: role,
-    points: 250,
-    memberSince: 'Jan 2024',
-  });
-  const [editForm, setEditForm] = useState({ name: '', email: '' });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   
+  // Initialize profile with user data or defaults
+  const [profile, setProfile] = useState({
+    name: user?.name || 'User',
+    email: user?.email || 'user@example.com',
+    role: user?.role || role,
+    points: user?.points || 250,
+    memberSince: user?.memberSince || 'Jan 2024',
+    phone: user?.collectorInfo?.phone || '',
+    address: user?.collectorInfo?.address || '',
+    vehicleType: user?.collectorInfo?.vehicleType || '',
+    vehicleNumberPlate: user?.collectorInfo?.vehicleNumberPlate || '',
+    experience: user?.collectorInfo?.experience || '',
+    isApproved: user?.collectorInfo?.isApproved || false
+  });
+
+  const [editForm, setEditForm] = useState({ 
+    name: profile.name, 
+    email: profile.email,
+    phone: profile.phone,
+    address: profile.address
+  });
+  
+  // Fetch user profile from backend
+  const fetchUserProfile = async () => {
+    try {
+      setLoading(true);
+      const token = localStorage.getItem('token');
+      if (!token) {
+        setError('No authentication token found');
+        return;
+      }
+
+      const response = await fetch('http://localhost:4000/api/auth/profile', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch profile: ${response.status}`);
+      }
+
+      const data = await response.json();
+      
+      if (data.user) {
+        const userData = data.user;
+        setProfile({
+          name: userData.name,
+          email: userData.email,
+          role: userData.role,
+          points: userData.points || 250,
+          memberSince: userData.createdAt ? new Date(userData.createdAt).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }) : 'Jan 2024',
+          phone: userData.collectorInfo?.phone || '',
+          address: userData.collectorInfo?.address || '',
+          vehicleType: userData.collectorInfo?.vehicleType || '',
+          vehicleNumberPlate: userData.collectorInfo?.vehicleNumberPlate || '',
+          experience: userData.collectorInfo?.experience || '',
+          isApproved: userData.collectorInfo?.isApproved || false
+        });
+
+        setEditForm({
+          name: userData.name,
+          email: userData.email,
+          phone: userData.collectorInfo?.phone || '',
+          address: userData.collectorInfo?.address || ''
+        });
+      }
+    } catch (error) {
+      console.error('Error fetching profile:', error);
+      setError(error instanceof Error ? error.message : 'Failed to load profile');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Update profile when user prop changes or component mounts
+  useEffect(() => {
+    if (user) {
+      // Use user data from props if available
+      setProfile({
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        points: user.points || 250,
+        memberSince: user.memberSince || 'Jan 2024',
+        phone: user.collectorInfo?.phone || '',
+        address: user.collectorInfo?.address || '',
+        vehicleType: user.collectorInfo?.vehicleType || '',
+        vehicleNumberPlate: user.collectorInfo?.vehicleNumberPlate || '',
+        experience: user.collectorInfo?.experience || '',
+        isApproved: user.collectorInfo?.isApproved || false
+      });
+    } else {
+      // Fetch from backend if no user prop
+      fetchUserProfile();
+    }
+  }, [user]);
+
   useEffect(() => {
     const t = setTimeout(() => setMounted(true), 0);
     return () => clearTimeout(t);
@@ -46,68 +163,21 @@ const Profile: React.FC<ProfileProps> = ({ onTabChange, activeTab = 'profile', r
     }
   }, [onTabChange]);
 
-  // Update profile role when prop changes
-  useEffect(() => {
-    setProfile(prev => ({ ...prev, role: role }));
-  }, [role]);
-
-  // Load persisted avatar and profile details
+  // Load persisted avatar
   useEffect(() => {
     try {
       const savedAvatar = localStorage.getItem('profile.avatar');
       if (savedAvatar) setAvatarUrl(savedAvatar);
-      const savedDetails = localStorage.getItem('profile.details');
-      if (savedDetails) {
-        const parsed = JSON.parse(savedDetails);
-        setProfile((p) => ({ ...p, ...parsed }));
-      }
     } catch {}
   }, []);
 
   // Auto-open file chooser when opening editor from avatar edit action
   useEffect(() => {
     if (editorOpen) {
-      // Defer to allow modal to mount
       const id = setTimeout(() => fileInputRef.current?.click(), 0);
       return () => clearTimeout(id);
     }
   }, [editorOpen]);
-
-  // Navigation handlers for sidebar - THESE ARE THE KEY FIXES
-  const handleDashboardOverview = () => {
-    if (onTabChange) {
-      onTabChange('overview');
-    }
-    navigate('/dashboard');
-  };
-
-  const handleBookService = () => {
-    if (onTabChange) {
-      onTabChange('bookings');
-    }
-    navigate('/dashboard');
-  };
-
-  const handleEcoStore = () => {
-    if (onTabChange) {
-      onTabChange('products');
-    }
-    navigate('/dashboard');
-  };
-
-  const handleTrackStatus = () => {
-    if (onTabChange) {
-      onTabChange('status');
-    }
-    navigate('/status');
-  };
-
-  const handleTabNavigation = (tab: string, path: string = '/dashboard') => {
-    if (onTabChange) {
-      onTabChange(tab);
-    }
-    navigate(path);
-  };
 
   const handleLogout = () => {
     if (onLogout) {
@@ -116,14 +186,81 @@ const Profile: React.FC<ProfileProps> = ({ onTabChange, activeTab = 'profile', r
     navigate('/');
   };
 
+  // Update profile in backend
+  const updateProfile = async (updatedData: any) => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        setError('No authentication token found');
+        return false;
+      }
+
+      const response = await fetch('http://localhost:4000/api/auth/profile', {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(updatedData),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to update profile: ${response.status}`);
+      }
+
+      return true;
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      setError(error instanceof Error ? error.message : 'Failed to update profile');
+      return false;
+    }
+  };
+
+  // Format role for display
+  const getRoleDisplay = () => {
+    if (profile.role === 'collector') {
+      return profile.isApproved ? 'Approved Collector' : 'Pending Collector';
+    }
+    return profile.role.charAt(0).toUpperCase() + profile.role.slice(1);
+  };
+
+  // Get role badge color
+  const getRoleBadgeClass = () => {
+    switch (profile.role) {
+      case 'admin': return 'role-badge admin';
+      case 'collector': return profile.isApproved ? 'role-badge collector approved' : 'role-badge collector pending';
+      default: return 'role-badge user';
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="profile-page">
+        <div className="container">
+          <div className="loading-state">
+            <p>Loading profile...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="profile-page">
       <div className="container">
-        {/* Header - Removed Back to Dashboard button */}
+        {/* Header */}
         <div className={`profile-header ${mounted ? 'animate-in' : ''}`}>
           <h1 className="page-title">My Profile</h1>
           <p className="page-subtitle">Manage your account, preferences, and see your activity</p>
         </div>
+
+        {error && (
+          <div className="error-banner">
+            <FaShieldAlt />
+            <span>{error}</span>
+            <button onClick={() => setError(null)}>×</button>
+          </div>
+        )}
 
         {/* Overview Card */}
         <div className={`overview-card ${mounted ? 'animate-in delay-1' : ''}`}>
@@ -143,12 +280,32 @@ const Profile: React.FC<ProfileProps> = ({ onTabChange, activeTab = 'profile', r
                 <FaEdit /> Edit
               </button>
             </div>
+            <div className={`role-badge ${getRoleBadgeClass()}`}>
+              {getRoleDisplay()}
+            </div>
           </div>
           <div className="user-meta">
             <h2 className="user-name">{profile.name}</h2>
             <div className="user-line"><FaEnvelope /> <span>{profile.email}</span></div>
-            <div className="user-line"><FaShieldAlt /> <span>Role: {profile.role}</span></div>
             <div className="user-line"><FaHistory /> <span>Member since {profile.memberSince}</span></div>
+            
+            {/* Collector-specific info */}
+            {profile.role === 'collector' && (
+              <>
+                {profile.phone && (
+                  <div className="user-line"><FaPhone /> <span>{profile.phone}</span></div>
+                )}
+                {profile.address && (
+                  <div className="user-line"><FaMapMarkerAlt /> <span>{profile.address}</span></div>
+                )}
+                {profile.vehicleType && (
+                  <div className="user-line"><FaTruck /> <span>{profile.vehicleType} - {profile.vehicleNumberPlate}</span></div>
+                )}
+                {profile.experience && (
+                  <div className="user-line"><FaMedal /> <span>{profile.experience}</span></div>
+                )}
+              </>
+            )}
           </div>
           <div className="user-stats">
             <div className="points-tile">
@@ -161,7 +318,12 @@ const Profile: React.FC<ProfileProps> = ({ onTabChange, activeTab = 'profile', r
             <button
               className="edit-btn"
               onClick={() => {
-                setEditForm({ name: profile.name, email: profile.email });
+                setEditForm({ 
+                  name: profile.name, 
+                  email: profile.email,
+                  phone: profile.phone,
+                  address: profile.address
+                });
                 setProfileEditOpen(true);
               }}
             >
@@ -198,26 +360,6 @@ const Profile: React.FC<ProfileProps> = ({ onTabChange, activeTab = 'profile', r
                   }}
                   onMouseUp={() => { dragRef.current.dragging = false; }}
                   onMouseLeave={() => { dragRef.current.dragging = false; }}
-                  onTouchStart={(e) => {
-                    const t = e.touches[0];
-                    dragRef.current = { dragging: true, startX: t.clientX, startY: t.clientY, initTx: tx, initTy: ty };
-                  }}
-                  onTouchMove={(e) => {
-                    if (!dragRef.current.dragging) return;
-                    const t = e.touches[0];
-                    const dx = t.clientX - dragRef.current.startX;
-                    const dy = t.clientY - dragRef.current.startY;
-                    const img = imgElRef.current;
-                    if (!img) return;
-                    const dw = img.naturalWidth * scale;
-                    const dh = img.naturalHeight * scale;
-                    const clamp = (val: number, min: number, max: number) => Math.max(min, Math.min(max, val));
-                    const nextTx = clamp(dragRef.current.initTx + dx, Math.min(0, viewport - dw), 0);
-                    const nextTy = clamp(dragRef.current.initTy + dy, Math.min(0, viewport - dh), 0);
-                    setTx(nextTx);
-                    setTy(nextTy);
-                  }}
-                  onTouchEnd={() => { dragRef.current.dragging = false; }}
                 >
                   {previewSrc ? (
                     <img
@@ -227,7 +369,6 @@ const Profile: React.FC<ProfileProps> = ({ onTabChange, activeTab = 'profile', r
                       className="crop-image"
                       onLoad={(e) => {
                         const img = e.currentTarget;
-                        // initialize centered position
                         const dw = img.naturalWidth * scale;
                         const dh = img.naturalHeight * scale;
                         setTx((viewport - dw) / 2);
@@ -253,7 +394,6 @@ const Profile: React.FC<ProfileProps> = ({ onTabChange, activeTab = 'profile', r
                     const img = imgElRef.current;
                     const newScale = Number(e.target.value);
                     if (!img) { setScale(newScale); return; }
-                    // try to keep center while scaling
                     const dwOld = img.naturalWidth * scale;
                     const dhOld = img.naturalHeight * scale;
                     const dwNew = img.naturalWidth * newScale;
@@ -281,7 +421,6 @@ const Profile: React.FC<ProfileProps> = ({ onTabChange, activeTab = 'profile', r
                         const file = e.target.files?.[0];
                         if (!file) return;
                         const url = URL.createObjectURL(file);
-                        // Revoke previous preview url if any
                         if (previewSrc) URL.revokeObjectURL(previewSrc);
                         setPreviewSrc(url);
                       }}
@@ -313,7 +452,6 @@ const Profile: React.FC<ProfileProps> = ({ onTabChange, activeTab = 'profile', r
                     canvas.height = size;
                     const ctx = canvas.getContext('2d');
                     if (!ctx) return;
-                    // compute crop from current transform
                     const dw = img.naturalWidth * scale;
                     const dh = img.naturalHeight * scale;
                     const sx = (-tx) * (img.naturalWidth / dw);
@@ -322,7 +460,6 @@ const Profile: React.FC<ProfileProps> = ({ onTabChange, activeTab = 'profile', r
                     const sHeight = viewport * (img.naturalHeight / dh);
                     ctx.clearRect(0, 0, size, size);
                     ctx.drawImage(img, sx, sy, sWidth, sHeight, 0, 0, size, size);
-                    // make circle mask
                     const circleCanvas = document.createElement('canvas');
                     circleCanvas.width = size;
                     circleCanvas.height = size;
@@ -362,12 +499,45 @@ const Profile: React.FC<ProfileProps> = ({ onTabChange, activeTab = 'profile', r
               <h3 className="section-title">Edit Profile</h3>
               <form
                 className="modal-form"
-                onSubmit={(e) => {
+                onSubmit={async (e) => {
                   e.preventDefault();
-                  const next = { ...profile, name: editForm.name, email: editForm.email };
-                  setProfile(next);
-                  try { localStorage.setItem('profile.details', JSON.stringify({ name: next.name, email: next.email })); } catch {}
-                  setProfileEditOpen(false);
+                  setLoading(true);
+                  
+                  try {
+                    const success = await updateProfile({
+                      name: editForm.name,
+                      email: editForm.email,
+                      phone: editForm.phone,
+                      address: editForm.address
+                    });
+
+                    if (success) {
+                      const updatedProfile = { 
+                        ...profile, 
+                        name: editForm.name, 
+                        email: editForm.email,
+                        phone: editForm.phone,
+                        address: editForm.address
+                      };
+                      setProfile(updatedProfile);
+                      
+                      // Save to localStorage as backup
+                      try { 
+                        localStorage.setItem('profile.details', JSON.stringify({ 
+                          name: updatedProfile.name, 
+                          email: updatedProfile.email,
+                          phone: updatedProfile.phone,
+                          address: updatedProfile.address
+                        })); 
+                      } catch {}
+                      
+                      setProfileEditOpen(false);
+                    }
+                  } catch (error) {
+                    console.error('Error updating profile:', error);
+                  } finally {
+                    setLoading(false);
+                  }
                 }}
               >
                 <div className="form-row">
@@ -390,9 +560,38 @@ const Profile: React.FC<ProfileProps> = ({ onTabChange, activeTab = 'profile', r
                     required
                   />
                 </div>
+                
+                {/* Additional fields for collectors */}
+                {profile.role === 'collector' && (
+                  <>
+                    <div className="form-row">
+                      <label htmlFor="phone">Phone</label>
+                      <input
+                        id="phone"
+                        type="tel"
+                        value={editForm.phone}
+                        onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })}
+                      />
+                    </div>
+                    <div className="form-row">
+                      <label htmlFor="address">Address</label>
+                      <textarea
+                        id="address"
+                        value={editForm.address}
+                        onChange={(e) => setEditForm({ ...editForm, address: e.target.value })}
+                        rows={3}
+                      />
+                    </div>
+                  </>
+                )}
+                
                 <div className="modal-actions">
-                  <button type="button" className="btn btn-outline" onClick={() => setProfileEditOpen(false)}>Cancel</button>
-                  <button type="submit" className="btn btn-yellow">Save Changes</button>
+                  <button type="button" className="btn btn-outline" onClick={() => setProfileEditOpen(false)} disabled={loading}>
+                    Cancel
+                  </button>
+                  <button type="submit" className="btn btn-yellow" disabled={loading}>
+                    {loading ? 'Saving...' : 'Save Changes'}
+                  </button>
                 </div>
               </form>
             </div>

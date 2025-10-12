@@ -1,6 +1,6 @@
 // routes/auth.js
 const express = require('express');
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/Users');
 
@@ -52,37 +52,79 @@ router.post('/register', async (req, res) => {
       role
     };
 
+    // ✅ If role is collector, mark as unapproved initially
     if (role === 'collector') {
       userData.collectorInfo = {
         phone: collectorInfo.phone,
         address: collectorInfo.address,
         vehicleType: collectorInfo.vehicleType,
         vehicleNumberPlate: collectorInfo.vehicleNumberPlate,
-        experience: collectorInfo.experience || ''
+        experience: collectorInfo.experience || '',
+        isApproved: false, // 🔥 Key line
+        status: 'pending'  // 🔥 For admin UI clarity
       };
     }
 
     const user = new User(userData);
     await user.save();
 
-    // create token payload
+    // ✅ For collectors, don't auto-login
+    if (role === 'collector') {
+      return res.status(201).json({
+        message: 'Collector registration submitted for admin approval.',
+        collectorId: user._id,
+        status: 'pending'
+      });
+    }
+
+    // ✅ For users/admins, generate JWT immediately
     const token = jwt.sign({ id: user._id, role: user.role }, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
 
-    // Never return password
     const userSafe = {
       id: user._id,
       name: user.name,
       email: user.email,
       role: user.role,
-      collectorInfo: user.collectorInfo
     };
 
     return res.status(201).json({ user: userSafe, token });
+
   } catch (err) {
     console.error('Register error:', err);
     return res.status(500).json({ error: 'Internal server error' });
   }
 });
+// Middleware to verify JWT
+const authMiddleware = (req, res, next) => {
+  const authHeader = req.headers.authorization;
+  if (!authHeader) return res.status(401).json({ error: 'No token provided' });
+
+  const token = authHeader.split(' ')[1];
+  if (!token) return res.status(401).json({ error: 'Invalid token' });
+
+  try {
+    const decoded = require('jsonwebtoken').verify(token, process.env.JWT_SECRET || 'secret');
+    req.userId = decoded.id;
+    req.userRole = decoded.role;
+    next();
+  } catch (err) {
+    return res.status(401).json({ error: 'Invalid token' });
+  }
+};
+
+// GET /api/auth/profile
+router.get('/profile', authMiddleware, async (req, res) => {
+  try {
+    const user = await User.findById(req.userId).select('-password');
+    if (!user) return res.status(404).json({ error: 'User not found' });
+
+    res.json({ user });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 
 /**
  * POST /login
@@ -94,14 +136,15 @@ router.post('/login', async (req, res) => {
     if (!email || !password) return res.status(400).json({ error: 'email and password required' });
 
     const user = await User.findOne({ email });
-    if (user.role === 'collector' && !user.collectorInfo?.isApproved) {
-        return res.status(403).json({ error: 'Collector not yet approved by admin' });
-    }
     if (!user) return res.status(401).json({ error: 'Invalid credentials' });
+
+    // ✅ Check collector approval before login
+    if (user.role === 'collector' && !user.collectorInfo?.isApproved) {
+      return res.status(403).json({ error: 'Collector not yet approved by admin' });
+    }
 
     const ok = await bcrypt.compare(password, user.password);
     if (!ok) return res.status(401).json({ error: 'Invalid credentials' });
-    
     
     const token = jwt.sign({ id: user._id, role: user.role }, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
     
@@ -114,10 +157,13 @@ router.post('/login', async (req, res) => {
     };
 
     return res.json({ user: userSafe, token });
-} catch (err) {
+
+  } catch (err) {
     console.error('Login error:', err);
     return res.status(500).json({ error: 'Internal server error' });
   }
 });
+
+
 
 module.exports = router;

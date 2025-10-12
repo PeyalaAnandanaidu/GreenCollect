@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import './AdminDashboard.css';
 import { 
     FaUsers, FaUserCheck, FaChartLine, FaCheck, FaTimes, 
@@ -12,7 +12,7 @@ interface AdminDashboardProps {
 }
 
 interface CollectorRequest {
-    id: number;
+    id: string;
     name: string;
     email: string;
     phone: string;
@@ -35,33 +35,8 @@ interface RecycledPartner {
 }
 
 const AdminDashboard: React.FC<AdminDashboardProps> = ({ activeTab }) => {
-    const [collectorRequests, setCollectorRequests] = useState<CollectorRequest[]>([
-        {
-            id: 1,
-            name: 'Rajesh Kumar',
-            email: 'rajesh@example.com',
-            phone: '+91 9876543210',
-            address: '123 MG Road, Bangalore, Karnataka',
-            vehicleType: 'Pickup Truck',
-            vehicleNumber: 'KA01AB1234',
-            experience: '2 years in waste collection',
-            submittedAt: '2024-01-15 10:30:00',
-            status: 'pending'
-        },
-        {
-            id: 2,
-            name: 'Priya Singh',
-            email: 'priya@example.com',
-            phone: '+91 8765432109',
-            address: '456 Koramangala, Bangalore, Karnataka',
-            vehicleType: 'Three-wheeler',
-            vehicleNumber: 'KA02CD5678',
-            experience: '1 year in logistics',
-            submittedAt: '2024-01-14 14:20:00',
-            status: 'pending'
-        }
-    ]);
-
+    const [collectorRequests, setCollectorRequests] = useState<CollectorRequest[]>([]);
+    const [loading, setLoading] = useState(true);
     const [activeCollectors] = useState([
         { id: 1, name: 'Rahul Verma', completedPickups: 45, rating: 4.8 },
         { id: 2, name: 'Sneha Patel', completedPickups: 38, rating: 4.9 },
@@ -99,31 +74,104 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ activeTab }) => {
         }
     ]);
 
-    const handleApproveRequest = (requestId: number) => {
-        setCollectorRequests(prev => 
-            prev.map(request => 
-                request.id === requestId 
-                    ? { ...request, status: 'approved' }
-                    : request
-            )
-        );
-        console.log(`Approved collector request: ${requestId}`);
+    // Fetch collector requests from backend
+    const fetchCollectorRequests = async () => {
+        try {
+            setLoading(true);
+            const response = await fetch('http://localhost:4000/api/admin/collector-requests');
+            if (response.ok) {
+                const data = await response.json();
+                // Transform backend data to match frontend interface
+                const requests: CollectorRequest[] = data.map((user: any) => ({
+                    id: user._id,
+                    name: user.name,
+                    email: user.email,
+                    phone: user.collectorInfo?.phone || 'N/A',
+                    address: user.collectorInfo?.address || 'N/A',
+                    vehicleType: user.collectorInfo?.vehicleType || 'N/A',
+                    vehicleNumber: user.collectorInfo?.vehicleNumberPlate || 'N/A',
+                    experience: user.collectorInfo?.experience || 'No experience provided',
+                    submittedAt: new Date(user.createdAt).toLocaleString(),
+                    status: user.collectorInfo?.isApproved ? 'approved' : 'pending'
+                }));
+                setCollectorRequests(requests);
+            }
+        } catch (error) {
+            console.error('Error fetching collector requests:', error);
+        } finally {
+            setLoading(false);
+        }
     };
 
-    const handleRejectRequest = (requestId: number) => {
-        setCollectorRequests(prev => 
-            prev.map(request => 
-                request.id === requestId 
-                    ? { ...request, status: 'rejected' }
-                    : request
-            )
-        );
-        console.log(`Rejected collector request: ${requestId}`);
+    useEffect(() => {
+        if (activeTab === 'management' || activeTab === 'overview') {
+            fetchCollectorRequests();
+        }
+    }, [activeTab]);
+
+    const handleApproveRequest = async (requestId: string) => {
+        try {
+            const response = await fetch(`http://localhost:4000/api/admin/approve-collector/${requestId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            });
+
+            if (response.ok) {
+                setCollectorRequests(prev => 
+                    prev.map(request => 
+                        request.id === requestId 
+                            ? { ...request, status: 'approved' }
+                            : request
+                    )
+                );
+                console.log(`Approved collector request: ${requestId}`);
+            } else {
+                console.error('Failed to approve collector');
+            }
+        } catch (error) {
+            console.error('Error approving collector:', error);
+        }
+    };
+
+    const handleRejectRequest = async (requestId: string) => {
+        try {
+            const response = await fetch(`http://localhost:4000/api/admin/reject-collector/${requestId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            });
+
+            if (response.ok) {
+                setCollectorRequests(prev => 
+                    prev.filter(request => request.id !== requestId)
+                );
+                console.log(`Rejected collector request: ${requestId}`);
+            } else {
+                console.error('Failed to reject collector');
+            }
+        } catch (error) {
+            console.error('Error rejecting collector:', error);
+        }
     };
 
     const pendingRequests = collectorRequests.filter(req => req.status === 'pending');
     const approvedRequests = collectorRequests.filter(req => req.status === 'approved');
     const rejectedRequests = collectorRequests.filter(req => req.status === 'rejected');
+
+    if (loading) {
+        return (
+            <div className="admin-dashboard">
+                <main className="main-content">
+                    <div className="loading-state">
+                        <p>Loading collector requests...</p>
+                    </div>
+                </main>
+            </div>
+        );
+    }
 
     return (
         <div className="admin-dashboard">
@@ -413,6 +461,14 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ activeTab }) => {
                                                             <strong>Vehicle:</strong>
                                                             <span>{request.vehicleType} ({request.vehicleNumber})</span>
                                                         </div>
+                                                    </div>
+                                                    <div className="request-actions">
+                                                        <button 
+                                                            className="btn btn-danger"
+                                                            onClick={() => handleRejectRequest(request.id)}
+                                                        >
+                                                            <FaTimes /> Revoke Access
+                                                        </button>
                                                     </div>
                                                 </div>
                                             ))}
