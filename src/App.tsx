@@ -13,6 +13,8 @@ function App() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('overview');
   const [userRole, setUserRole] = useState<'user' | 'collector' | 'admin'>('user');
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
   const handleMenuToggle = () => {
     setMenuOpen(!menuOpen);
   };
@@ -22,9 +24,14 @@ function App() {
     setMenuOpen(false); // Close menu when tab changes
   };
 
+  const handleLogin = (role: 'user' | 'collector' | 'admin') => {
+    setUserRole(role);
+    setIsLoggedIn(true);
+    setActiveTab('overview');
+  };
+
   const handleLogout = () => {
-    // Handle logout logic
-    console.log('Logging out...');
+    setIsLoggedIn(false);
     setUserRole('user');
     setActiveTab('overview');
     setMenuOpen(false);
@@ -32,18 +39,23 @@ function App() {
 
   return (
     <Router>
-      <Navbar
-        onMenuToggle={handleMenuToggle}
-        menuOpen={menuOpen}
-        activeTab={activeTab}
-        onTabChange={handleTabChange}
-        role={userRole}
-        onLogout={handleLogout}
-      />
+     // In your App.tsx, make sure to pass isLoggedIn to Navbar:
+<Navbar
+  onMenuToggle={handleMenuToggle}
+  menuOpen={menuOpen}
+  activeTab={activeTab}
+  onTabChange={handleTabChange}
+  role={userRole}
+  onLogout={handleLogout}
+  isLoggedIn={isLoggedIn} // Add this line
+/>
       <div className="main-content">
         <Routes>
           <Route path="/" element={<Home />} />
-          <Route path="/login" element={<Login />} />
+          <Route 
+            path="/login" 
+            element={<Login onLogin={handleLogin} />} 
+          />
           <Route path="/register" element={<Register />} />
           <Route 
             path="/dashboard" 
@@ -52,10 +64,19 @@ function App() {
                 role={userRole}
                 onLogout={handleLogout}
                 activeTab={activeTab}
+                onTabChange={handleTabChange}
               />
             } 
           />
-          <Route path="/status" element={<StatusPage />} />
+          <Route 
+            path="/status" 
+            element={
+              <StatusPage 
+                onTabChange={handleTabChange}
+                activeTab={activeTab}
+              />
+            } 
+          />
           <Route path="/profile" element={<Profile />} />
         </Routes>
       </div>

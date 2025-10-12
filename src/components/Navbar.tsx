@@ -33,6 +33,7 @@ interface NavbarProps {
   onTabChange: (tab: string) => void;
   role: 'user' | 'collector' | 'admin';
   onLogout?: () => void;
+  isLoggedIn?: boolean;
 }
 
 const Navbar: React.FC<NavbarProps> = ({
@@ -42,6 +43,7 @@ const Navbar: React.FC<NavbarProps> = ({
   onTabChange,
   role,
   onLogout,
+  isLoggedIn = false,
 }) => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -51,8 +53,19 @@ const Navbar: React.FC<NavbarProps> = ({
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const notificationsRef = useRef<HTMLDivElement | null>(null);
 
-  // Simulate login for different roles
-  // Login handlers can be implemented in auth flows; removed unused stubs to keep build clean
+  // Update user state when login status or role changes
+  useEffect(() => {
+    if (isLoggedIn) {
+      setUser({
+        name: 'John Doe',
+        email: 'john.doe@example.com',
+        role: role,
+        coins: role === 'user' ? 250 : 0,
+      });
+    } else {
+      setUser(null);
+    }
+  }, [isLoggedIn, role]);
 
   const handleLogout = () => {
     setUser(null);
@@ -65,6 +78,17 @@ const Navbar: React.FC<NavbarProps> = ({
   const handleTabChange = (tab: string) => {
     onTabChange(tab);
     onMenuToggle();
+  };
+
+  const handleDashboardOverview = () => {
+    onTabChange('overview');
+    navigate('/dashboard');
+    onMenuToggle(); // Close the mobile menu
+  };
+
+  const handleProfileClick = () => {
+    navigate('/profile');
+    setDropdownOpen(false);
   };
 
   const notifications = [
@@ -90,13 +114,19 @@ const Navbar: React.FC<NavbarProps> = ({
 
   const unreadNotifications = notifications.filter((n) => !n.read).length;
 
-  const isLoggedIn = !!user || location.pathname === '/dashboard';
+  // Check if user is logged in - include all protected pages
+  const shouldShowLoggedInUI = isLoggedIn || 
+                              location.pathname === '/dashboard' || 
+                              location.pathname === '/status' ||
+                              location.pathname === '/profile';
 
-  // Close notifications when clicking anywhere outside the notifications menu while on dashboard
+  // Close notifications when clicking anywhere outside the notifications menu while on protected pages
   useEffect(() => {
     const handleDocumentClick = (e: MouseEvent) => {
-      const onDashboard = location.pathname.startsWith('/dashboard');
-      if (!onDashboard) return;
+      const onProtectedPage = location.pathname.startsWith('/dashboard') || 
+                             location.pathname.startsWith('/status') ||
+                             location.pathname.startsWith('/profile');
+      if (!onProtectedPage) return;
       if (
         notificationsOpen &&
         notificationsRef.current &&
@@ -113,8 +143,8 @@ const Navbar: React.FC<NavbarProps> = ({
   return (
     <>
       <nav className="navbar-janatha">
-        {/* Show Hamburger only after login */}
-        {isLoggedIn && (
+        {/* Show Hamburger only when logged in or on protected pages */}
+        {shouldShowLoggedInUI && (
           <button
             className="hamburger-menu-btn"
             onClick={onMenuToggle}
@@ -130,13 +160,12 @@ const Navbar: React.FC<NavbarProps> = ({
 
         {/* Brand always visible */}
         <Link className="navbar-brand" to="/">
-          
           <span className="brand-text">Janatha Garage</span>
         </Link>
 
         <div className="navbar-content">
           {/* Before Login */}
-          {!isLoggedIn && (
+          {!shouldShowLoggedInUI && (
             <div className="auth-buttons">
               <Link className="nav-link login-btn" to="/login">
                 Login
@@ -148,7 +177,7 @@ const Navbar: React.FC<NavbarProps> = ({
           )}
 
           {/* After Login */}
-          {isLoggedIn && (
+          {shouldShowLoggedInUI && (
             <div className="user-section">
               {role === 'user' && (
                 <div
@@ -228,11 +257,11 @@ const Navbar: React.FC<NavbarProps> = ({
                   className="profile-btn"
                   onClick={() => setDropdownOpen(!dropdownOpen)}
                 >
-                  <FaUserCircle
-                    className="profile-icon"
+                  <FaUserCircle 
+                    className="profile-icon" 
                     onClick={(e) => {
                       e.stopPropagation();
-                      navigate('/profile');
+                      handleProfileClick();
                     }}
                   />
                   <span className="profile-name">{user?.name || 'User'}</span>
@@ -248,28 +277,28 @@ const Navbar: React.FC<NavbarProps> = ({
                       </span>
                       <span className="user-role-badge">{role}</span>
                     </div>
-                    <Link
+                    <button
                       className="dropdown-item"
-                      to="/dashboard"
-                      onClick={() => setDropdownOpen(false)}
+                      onClick={handleDashboardOverview}
                     >
                       Dashboard
-                    </Link>
-                    <Link
+                    </button>
+                    <button
                       className="dropdown-item"
-                      to="/profile"
-                      onClick={() => setDropdownOpen(false)}
+                      onClick={handleProfileClick}
                     >
                       My Profile
-                    </Link>
+                    </button>
                     {role === 'user' && (
-                      <Link
+                      <button
                         className="dropdown-item"
-                        to="/rewards"
-                        onClick={() => setDropdownOpen(false)}
+                        onClick={() => {
+                          // Navigate to rewards page
+                          setDropdownOpen(false);
+                        }}
                       >
                         My Rewards
-                      </Link>
+                      </button>
                     )}
                     <button
                       className="dropdown-item logout-btn"
@@ -288,132 +317,133 @@ const Navbar: React.FC<NavbarProps> = ({
       {/* Mobile Menu Overlay */}
       {menuOpen && <div className="mobile-menu-overlay active" onClick={onMenuToggle} />}
 
-      {/* Mobile Menu */}
-      <div className={`mobile-menu ${menuOpen ? 'menu-open' : ''}`}>
-        <div className="mobile-menu-header">
-          <div className="mobile-menu-brand">
-            
-            <span className="mobile-menu-title">Janatha Garage</span>
+      {/* Mobile Menu - Only show when logged in */}
+      {shouldShowLoggedInUI && (
+        <div className={`mobile-menu ${menuOpen ? 'menu-open' : ''}`}>
+          <div className="mobile-menu-header">
+            <div className="mobile-menu-brand">
+              <span className="mobile-menu-title">Janatha Garage</span>
+            </div>
           </div>
-        </div>
 
-        <nav className="mobile-menu-nav">
-          {/* Common for all roles */}
-          <button
-            className={`mobile-menu-item ${activeTab === 'overview' ? 'active' : ''}`}
-            onClick={() => handleTabChange('overview')}
-          >
-            <FaChartLine className="mobile-menu-item-icon" />
-            <span>Dashboard Overview</span>
-          </button>
-
-          {/* User specific routes */}
-          {role === 'user' && (
-            <>
-              <button
-                className={`mobile-menu-item ${activeTab === 'bookings' ? 'active' : ''}`}
-                onClick={() => handleTabChange('bookings')}
-              >
-                <FaCalendar className="mobile-menu-item-icon" />
-                <span>Book Service</span>
-              </button>
-
-              <button
-                className={`mobile-menu-item ${activeTab === 'status' ? 'active' : ''}`}
-                onClick={() => {
-                  handleTabChange('status');
-                  navigate('/status');
-                }}
-              >
-                <FaListAlt className="mobile-menu-item-icon" />
-                <span>Track Status</span>
-              </button>
-
-              <button
-                className={`mobile-menu-item ${activeTab === 'products' ? 'active' : ''}`}
-                onClick={() => handleTabChange('products')}
-              >
-                <FaCartArrowDown className="mobile-menu-item-icon" />
-                <span>Eco Store</span>
-              </button>
-            </>
-          )}
-
-          {/* Collector specific routes */}
-          {role === 'collector' && (
+          <nav className="mobile-menu-nav">
+            {/* Common for all roles - Updated Dashboard Overview button */}
             <button
-              className={`mobile-menu-item ${activeTab === 'requests' ? 'active' : ''}`}
-              onClick={() => handleTabChange('requests')}
+              className={`mobile-menu-item ${activeTab === 'overview' ? 'active' : ''}`}
+              onClick={handleDashboardOverview}
             >
-              <FaTruck className="mobile-menu-item-icon" />
-              <span>Service Requests</span>
+              <FaChartLine className="mobile-menu-item-icon" />
+              <span>Dashboard Overview</span>
             </button>
-          )}
 
-          {/* Admin specific routes */}
-          {role === 'admin' && (
-            <>
-              <button
-                className={`mobile-menu-item ${activeTab === 'management' ? 'active' : ''}`}
-                onClick={() => handleTabChange('management')}
-              >
-                <FaUsers className="mobile-menu-item-icon" />
-                <span>User Management</span>
-              </button>
+            {/* User specific routes */}
+            {role === 'user' && (
+              <>
+                <button
+                  className={`mobile-menu-item ${activeTab === 'bookings' ? 'active' : ''}`}
+                  onClick={() => handleTabChange('bookings')}
+                >
+                  <FaCalendar className="mobile-menu-item-icon" />
+                  <span>Book Service</span>
+                </button>
 
-              <button
-                className={`mobile-menu-item ${activeTab === 'products' ? 'active' : ''}`}
-                onClick={() => handleTabChange('products')}
-              >
-                <FaStore className="mobile-menu-item-icon" />
-                <span>Inventory Management</span>
-              </button>
+                <button
+                  className={`mobile-menu-item ${activeTab === 'status' ? 'active' : ''}`}
+                  onClick={() => {
+                    handleTabChange('status');
+                    navigate('/status');
+                  }}
+                >
+                  <FaListAlt className="mobile-menu-item-icon" />
+                  <span>Track Status</span>
+                </button>
 
-              <button
-                className={`mobile-menu-item ${activeTab === 'partners' ? 'active' : ''}`}
-                onClick={() => handleTabChange('partners')}
-              >
-                <FaHandshake className="mobile-menu-item-icon" />
-                <span>Partner Management</span>
-              </button>
-
-              <button
-                className={`mobile-menu-item ${activeTab === 'settings' ? 'active' : ''}`}
-                onClick={() => handleTabChange('settings')}
-              >
-                <FaCog className="mobile-menu-item-icon" />
-                <span>Settings</span>
-              </button>
-
-              {/* Admin Quick Actions */}
-              <div className="admin-quick-actions">
-                <h4>Quick Actions</h4>
-                <button 
-                  className="quick-action-btn"
+                <button
+                  className={`mobile-menu-item ${activeTab === 'products' ? 'active' : ''}`}
                   onClick={() => handleTabChange('products')}
                 >
-                  <FaStore />
-                  <span>Add Part</span>
+                  <FaCartArrowDown className="mobile-menu-item-icon" />
+                  <span>Eco Store</span>
                 </button>
-                <button 
-                  className="quick-action-btn"
+              </>
+            )}
+
+            {/* Collector specific routes */}
+            {role === 'collector' && (
+              <button
+                className={`mobile-menu-item ${activeTab === 'requests' ? 'active' : ''}`}
+                onClick={() => handleTabChange('requests')}
+              >
+                <FaTruck className="mobile-menu-item-icon" />
+                <span>Service Requests</span>
+              </button>
+            )}
+
+            {/* Admin specific routes */}
+            {role === 'admin' && (
+              <>
+                <button
+                  className={`mobile-menu-item ${activeTab === 'management' ? 'active' : ''}`}
+                  onClick={() => handleTabChange('management')}
+                >
+                  <FaUsers className="mobile-menu-item-icon" />
+                  <span>User Management</span>
+                </button>
+
+                <button
+                  className={`mobile-menu-item ${activeTab === 'products' ? 'active' : ''}`}
+                  onClick={() => handleTabChange('products')}
+                >
+                  <FaStore className="mobile-menu-item-icon" />
+                  <span>Inventory Management</span>
+                </button>
+
+                <button
+                  className={`mobile-menu-item ${activeTab === 'partners' ? 'active' : ''}`}
                   onClick={() => handleTabChange('partners')}
                 >
-                  <FaHandshake />
-                  <span>Add Partner</span>
+                  <FaHandshake className="mobile-menu-item-icon" />
+                  <span>Partner Management</span>
                 </button>
-              </div>
-            </>
-          )}
-        </nav>
 
-        <div className="mobile-menu-logout">
-          <button className="mobile-menu-item mobile-logout-button" onClick={handleLogout}>
-            <FaSignOutAlt className="mobile-menu-item-icon" />
-            <span>Logout</span>
-          </button>
+                <button
+                  className={`mobile-menu-item ${activeTab === 'settings' ? 'active' : ''}`}
+                  onClick={() => handleTabChange('settings')}
+                >
+                  <FaCog className="mobile-menu-item-icon" />
+                  <span>Settings</span>
+                </button>
+
+                {/* Admin Quick Actions */}
+                <div className="admin-quick-actions">
+                  <h4>Quick Actions</h4>
+                  <button 
+                    className="quick-action-btn"
+                    onClick={() => handleTabChange('products')}
+                  >
+                    <FaStore />
+                    <span>Add Part</span>
+                  </button>
+                  <button 
+                    className="quick-action-btn"
+                    onClick={() => handleTabChange('partners')}
+                  >
+                    <FaHandshake />
+                    <span>Add Partner</span>
+                  </button>
+                </div>
+              </>
+            )}
+          </nav>
+
+          <div className="mobile-menu-logout">
+            <button className="mobile-menu-item mobile-logout-button" onClick={handleLogout}>
+              <FaSignOutAlt className="mobile-menu-item-icon" />
+              <span>Logout</span>
+            </button>
+          </div>
         </div>
-      </div>
+      )}
     </>
   );
 };

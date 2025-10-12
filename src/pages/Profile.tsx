@@ -1,11 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import './Profile.css';
-import { FaUserCircle, FaEnvelope, FaCoins, FaEdit, FaBell, FaShieldAlt, FaHistory, FaMedal, FaChevronLeft } from 'react-icons/fa';
+import { FaUserCircle, FaEnvelope, FaCoins, FaEdit, FaBell, FaShieldAlt, FaHistory, FaMedal } from 'react-icons/fa';
 
 const Profile: React.FC = () => {
   const [mounted, setMounted] = useState(false);
-  const navigate = useNavigate();
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [editorOpen, setEditorOpen] = useState(false);
   const [previewSrc, setPreviewSrc] = useState<string | null>(null);
@@ -26,6 +24,7 @@ const Profile: React.FC = () => {
     memberSince: 'Jan 2024',
   });
   const [editForm, setEditForm] = useState({ name: '', email: '' });
+  
   useEffect(() => {
     const t = setTimeout(() => setMounted(true), 0);
     return () => clearTimeout(t);
@@ -56,12 +55,8 @@ const Profile: React.FC = () => {
   return (
     <div className="profile-page">
       <div className="container">
-        {/* Header */}
+        {/* Header - Removed Back to Dashboard button */}
         <div className={`profile-header ${mounted ? 'animate-in' : ''}`}>
-          <button className="back-button" onClick={() => navigate('/dashboard')}>
-            <FaChevronLeft />
-            Back to Dashboard
-          </button>
           <h1 className="page-title">My Profile</h1>
           <p className="page-subtitle">Manage your account, preferences, and see your activity</p>
         </div>

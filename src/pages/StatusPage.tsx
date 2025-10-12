@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import './StatusPage.css';
 import {
     FaCalendar,
@@ -9,7 +8,6 @@ import {
     FaClock,
     FaTimesCircle,
     FaSearch,
-    FaChevronLeft,
     FaCoins,
     FaChartLine,
     FaSync,
@@ -31,16 +29,27 @@ interface Pickup {
     efficiency?: number;
 }
 
-const StatusPage: React.FC = () => {
+interface StatusPageProps {
+  onTabChange?: (tab: string) => void;
+  activeTab?: string;
+}
+
+const StatusPage: React.FC<StatusPageProps> = ({ onTabChange, activeTab = 'status' }) => {
     const [searchTerm, setSearchTerm] = useState('');
     const [statusFilter, setStatusFilter] = useState<string>('all');
     const [mounted, setMounted] = useState(false);
-    const navigate = useNavigate();
 
     useEffect(() => {
         const t = setTimeout(() => setMounted(true), 0);
         return () => clearTimeout(t);
     }, []);
+
+    // Set active tab to 'status' when component mounts
+    useEffect(() => {
+        if (onTabChange) {
+            onTabChange('status');
+        }
+    }, [onTabChange]);
 
     const pickups: Pickup[] = [
         { id: 1, date: '2025-10-05', type: 'Plastic', weight: '5 kg', address: '123 Main St, City', status: 'completed', collector: 'John Doe', trackingNumber: 'JG-2025-001', coinsEarned: 50, efficiency: 95 },
@@ -87,10 +96,7 @@ const StatusPage: React.FC = () => {
             <div className="container">
                 <div className={`status-header ${mounted ? 'animate-in' : ''}`}>
                     <div className="header-content">
-                        <button className="back-button" onClick={() => navigate('/UserDashboard')}>
-                            <FaChevronLeft />
-                            Back to Dashboard
-                        </button>
+                        {/* Removed Back to Dashboard button */}
                         <h1 className="page-title">Pickup Status & Tracking</h1>
                         <p className="page-subtitle">Track your waste pickup orders and view their current status in real-time</p>
                     </div>
