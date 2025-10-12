@@ -8,11 +8,13 @@ import Register from './pages/Register';
 import Profile from './pages/Profile';
 import Dashboard from './pages/Dashboard';
 import StatusPage from './pages/StatusPage';
+import RedeemCheckout from './pages/RedeemCheckout';
+import OrderSuccess from './pages/OrderSuccess';
 
 function App() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('overview');
-  const [userRole, setUserRole] = useState<'user' | 'collector' | 'admin'>('user');
+  const [userRole, setUserRole] = useState<'user' | 'collector' | 'admin'>('admin');
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   const handleMenuToggle = () => {
@@ -48,7 +50,7 @@ function App() {
         onLogout={handleLogout}
         isLoggedIn={isLoggedIn}
       />
-      <div className="main-content">
+      <div className="main-content-1">
         <Routes>
           <Route path="/" element={<Home />} />
           <Route
@@ -63,7 +65,6 @@ function App() {
                 role={userRole}
                 onLogout={handleLogout}
                 activeTab={activeTab}
-                onTabChange={handleTabChange}
               />
             }
           />
@@ -87,6 +88,8 @@ function App() {
               />
             }
           />
+          <Route path="/redeem" element={<RedeemCheckout />} />
+          <Route path="/order-success" element={<OrderSuccess />} />
         </Routes>
       </div>
       <Footer />

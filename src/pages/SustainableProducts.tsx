@@ -1,11 +1,11 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import './SustainableProducts.css';
 import {
     FaLeaf,
     FaShoppingBag,
     FaCoins,
     FaSearch,
-    FaFilter,
     FaShoppingCart,
     FaStar,
     FaTag,
@@ -33,7 +33,7 @@ interface Product {
 const SustainableProducts: React.FC = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [categoryFilter, setCategoryFilter] = useState('all');
-    const [userCoins, setUserCoins] = useState(1250);
+    const [userCoins] = useState(1250);
     const [wishlist, setWishlist] = useState<number[]>([]);
 
     const products: Product[] = [
@@ -203,16 +203,7 @@ const SustainableProducts: React.FC = () => {
         return matchesSearch && matchesCategory;
     });
 
-    const handleRedeem = (product: Product) => {
-        if (userCoins >= product.price) {
-            if (window.confirm(`Are you sure you want to redeem ${product.name} for ${product.price} coins?`)) {
-                setUserCoins(prev => prev - product.price);
-                alert(`Successfully redeemed ${product.name}! You have ${userCoins - product.price} coins remaining.`);
-            }
-        } else {
-            alert(`You need ${product.price - userCoins} more coins to redeem this product.`);
-        }
-    };
+    // Navigation to /redeem is handled via Link in the CTA button.
 
     const toggleWishlist = (productId: number) => {
         setWishlist(prev => 
@@ -408,16 +399,21 @@ const SustainableProducts: React.FC = () => {
                                 </div>
 
                                 <div className="product-actions">
-                                    <button
-                                        className={`redeem-btn ${userCoins >= product.price && product.inStock ? 'available' : 'insufficient'}`}
-                                        onClick={() => handleRedeem(product)}
-                                        disabled={userCoins < product.price || !product.inStock}
-                                    >
-                                        <FaShoppingCart className="btn-icon" />
-                                        {!product.inStock ? 'Out of Stock' : 
-                                         userCoins >= product.price ? 'Redeem Now' : 
-                                         `Need ${product.price - userCoins} More`}
-                                    </button>
+                                    {(userCoins >= product.price && product.inStock) ? (
+                                        <Link
+                                            className="redeem-btn available"
+                                            to="/redeem"
+                                            state={{ product }}
+                                        >
+                                            <FaShoppingCart className="btn-icon" />
+                                            Redeem Now
+                                        </Link>
+                                    ) : (
+                                        <button className="redeem-btn insufficient" disabled>
+                                            <FaShoppingCart className="btn-icon" />
+                                            {!product.inStock ? 'Out of Stock' : `Need ${product.price - userCoins} More`}
+                                        </button>
+                                    )}
                                 </div>
                             </div>
                         </div>

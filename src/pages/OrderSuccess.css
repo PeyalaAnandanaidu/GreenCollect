@@ -1,0 +1,25 @@
+.success-page { min-height: 100vh; background: linear-gradient(135deg, #000, #111); color: #f5f5f5; }
+.success-container { max-width: 900px; margin: 0 auto; padding: 24px 16px 60px; }
+.animate-in { opacity: 1; transform: translateY(0); transition: opacity .6s ease, transform .6s ease; }
+.delay-1 { transition-delay: .08s; }
+.title { font-size: 1.8rem; font-weight: 800; margin: 0; background: linear-gradient(135deg, #ffcc00, #ffaa00); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; text-shadow: 0 0 24px rgba(255,204,0,0.25); }
+.back-btn { display: inline-flex; align-items: center; gap: 8px; background: transparent; border: 1px solid rgba(255,255,255,0.16); color: #eaeaea; padding: 8px 12px; border-radius: 10px; cursor: pointer; }
+.back-btn:hover { border-color: rgba(255,204,0,0.6); box-shadow: 0 0 0 3px rgba(255,204,0,0.12); }
+.header-row { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+.success-card { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 18px; text-align: center; box-shadow: 0 10px 32px rgba(0,0,0,0.35); }
+.success-icon { font-size: 3rem; color: #2ecc71; margin-bottom: 10px; }
+.success-title { font-weight: 900; font-size: 1.3rem; letter-spacing: 0.2px; color: #ffcc00; }
+.success-sub { color: #cfcfcf; margin-bottom: 10px; }
+.product-row { display: flex; gap: 12px; align-items: center; justify-content: center; margin: 8px 0 12px; }
+.product-row img { width: 72px; height: 72px; object-fit: cover; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1); }
+.product-info { display: grid; text-align: left; }
+.product-info .name { color: #fff; font-weight: 700; line-height: 1.2; max-width: 500px; }
+.product-info .category { color: #cfcfcf; font-size: .9rem; }
+.total-coins { display: flex; justify-content: center; gap: 10px; align-items: center; color: #ddd; margin: 8px 0; }
+.total-coins .coins { color: #ffcc00; display: inline-flex; gap: 6px; align-items: center; font-weight: 800; }
+.eta { color: #cfcfcf; margin: 6px 0 2px; }
+.success-actions { display: flex; gap: 10px; justify-content: center; margin-top: 10px; }
+.btn { padding: 10px 14px; border-radius: 10px; font-weight: 800; cursor: pointer; }
+.btn-yellow { background: #ffcc00; color: #111; border: none; }
+.btn-outline { background: transparent; border: 1px solid rgba(255,255,255,0.16); color: #eaeaea; }
+.btn-outline:hover { border-color: rgba(255,204,0,0.6); box-shadow: 0 0 0 3px rgba(255,204,0,0.12); }

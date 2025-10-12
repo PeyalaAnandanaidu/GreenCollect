@@ -1,16 +1,21 @@
 /* ====================== index.css ====================== */
 
-/* Body styling */
-body {
-  background-color: #f8f9fa;
-  color: #212529;
-  font-family: 'Inter', sans-serif;
+/* Body & document baseline */
+html, body {
   margin: 0;
   padding: 0;
+  width: 100%;
+  overflow-x: hidden; /* prevent right-side white strip due to horizontal overflow */
+}
+
+body {
+  background-color: #000000; /* align with dark theme to avoid white edges */
+  color: #212529;
+  font-family: 'Inter', sans-serif;
 }
 
 /* Remove extra space below navbar */
-.main-content {
+.main-content-1 {
   margin: 0;
   padding: 0;
   padding-top: 70px; /* offset for navbar height */
