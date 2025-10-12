@@ -11,7 +11,7 @@ import StatusPage from './pages/StatusPage';
 function App() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('overview');
-  const [userRole, setUserRole] = useState<'user' | 'collector' | 'admin'>('collector');
+  const [userRole, setUserRole] = useState<'user' | 'collector' | 'admin'>('user');
   const handleMenuToggle = () => {
     setMenuOpen(!menuOpen);
   };

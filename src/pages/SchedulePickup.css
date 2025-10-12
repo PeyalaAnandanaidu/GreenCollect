@@ -1,216 +1,239 @@
+/* SchedulePickup.css - Clean Yellow, Orange & Black Theme */
 .schedule-pickup-overlay {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0.7);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 10000;
   padding: 20px;
+  backdrop-filter: blur(5px);
 }
 
 .schedule-pickup-modal {
-  background: white;
-  border-radius: 16px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+  background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%);
+  border-radius: 20px;
+  border: 1px solid rgba(255, 152, 0, 0.2);
   width: 100%;
-  max-width: 600px;
+  max-width: 500px;
   max-height: 90vh;
   overflow-y: auto;
-  animation: modalSlideIn 0.3s ease;
+  animation: modalSlideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
 }
 
 @keyframes modalSlideIn {
   from {
     opacity: 0;
-    transform: translateY(-20px);
+    transform: translateY(-30px) scale(0.95);
   }
   to {
     opacity: 1;
-    transform: translateY(0);
+    transform: translateY(0) scale(1);
   }
 }
 
 .schedule-pickup-header {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  padding: 1.5rem 2rem;
-  border-bottom: 1px solid #e9ecef;
-  background: linear-gradient(135deg, #28a745, #20c997);
-  color: white;
-  border-radius: 16px 16px 0 0;
+  align-items: flex-start;
+  padding: 25px 30px;
+  border-bottom: 1px solid rgba(255, 152, 0, 0.2);
+  background: rgba(255, 152, 0, 0.05);
+  position: relative;
+}
+
+.schedule-pickup-header::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #ff9800, #ffb74d);
+  border-radius: 20px 20px 0 0;
+}
+
+.header-content {
+  display: flex;
+  align-items: flex-start;
+  gap: 15px;
+  flex: 1;
+}
+
+.header-icon {
+  font-size: 2rem;
+  color: #ff9800;
+  margin-top: 5px;
 }
 
 .schedule-pickup-header h2 {
-  margin: 0;
+  margin: 0 0 5px 0;
   font-size: 1.5rem;
-  font-weight: 600;
+  font-weight: 700;
+  color: #ffffff;
+  background: linear-gradient(135deg, #ff9800, #ffb74d);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.schedule-pickup-header p {
+  margin: 0;
+  color: #b0b0b0;
+  font-size: 0.95rem;
 }
 
 .close-btn {
-  background: none;
-  border: none;
-  color: white;
-  font-size: 2rem;
+  background: rgba(255, 152, 0, 0.1);
+  border: 1px solid rgba(255, 152, 0, 0.3);
+  color: #ff9800;
+  font-size: 1.2rem;
   cursor: pointer;
-  padding: 0;
+  padding: 8px;
   width: 40px;
   height: 40px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 50%;
-  transition: background-color 0.2s;
+  border-radius: 10px;
+  transition: all 0.3s ease;
+  flex-shrink: 0;
 }
 
 .close-btn:hover {
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(255, 152, 0, 0.2);
+  transform: rotate(90deg);
+}
+
+.schedule-pickup-content {
+  padding: 0;
 }
 
 .schedule-pickup-form {
-  padding: 2rem;
+  padding: 30px;
 }
 
 .form-group {
-  margin-bottom: 1.5rem;
+  margin-bottom: 20px;
 }
 
 .form-group label {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  margin-bottom: 0.5rem;
+  gap: 10px;
+  margin-bottom: 8px;
   font-weight: 600;
-  color: #2d3748;
+  color: #ff9800;
+  font-size: 0.95rem;
 }
 
 .input-icon {
-  color: #28a745;
+  color: #ff9800;
   font-size: 1rem;
+  opacity: 0.8;
 }
 
 .form-group input,
 .form-group select,
 .form-group textarea {
   width: 100%;
-  padding: 0.75rem 1rem;
-  border: 2px solid #e9ecef;
-  border-radius: 8px;
+  padding: 12px 16px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 152, 0, 0.3);
+  border-radius: 10px;
   font-size: 1rem;
-  transition: all 0.2s;
+  color: #ffffff;
+  transition: all 0.3s ease;
   box-sizing: border-box;
+  font-family: inherit;
+}
+
+.form-group input::placeholder,
+.form-group textarea::placeholder {
+  color: #888888;
 }
 
 .form-group input:focus,
 .form-group select:focus,
 .form-group textarea:focus {
   outline: none;
-  border-color: #28a745;
-  box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.1);
+  border-color: #ff9800;
+  background: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 0 0 3px rgba(255, 152, 0, 0.1);
 }
 
 .form-group textarea {
   resize: vertical;
   min-height: 80px;
-  font-family: inherit;
+  line-height: 1.5;
 }
 
-/* Waste Type Grid */
-.waste-type-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 0.75rem;
-  margin-top: 0.5rem;
-}
-
-.waste-type-btn {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 1rem 0.5rem;
-  border: 2px solid #e9ecef;
-  border-radius: 8px;
-  background: white;
+.form-group select {
   cursor: pointer;
-  transition: all 0.2s;
-  text-align: center;
 }
 
-.waste-type-btn:hover {
-  border-color: #28a745;
-  transform: translateY(-2px);
-}
-
-.waste-type-btn.selected {
-  border-color: #28a745;
-  background: #f0fdf4;
-  box-shadow: 0 4px 12px rgba(40, 167, 69, 0.15);
-}
-
-.waste-icon {
-  font-size: 1.5rem;
-}
-
-.waste-label {
-  font-size: 0.875rem;
-  font-weight: 500;
-  color: #2d3748;
+.form-group select option {
+  background: #1a1a1a;
+  color: #ffffff;
+  padding: 10px;
 }
 
 /* Form Actions */
 .form-actions {
   display: flex;
-  gap: 1rem;
-  margin-top: 2rem;
-  padding-top: 1.5rem;
-  border-top: 1px solid #e9ecef;
+  gap: 15px;
+  margin-top: 30px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(255, 152, 0, 0.1);
 }
 
 .cancel-btn,
 .submit-btn {
   flex: 1;
-  padding: 0.875rem 1.5rem;
+  padding: 14px 20px;
   border: none;
-  border-radius: 8px;
+  border-radius: 10px;
   font-size: 1rem;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.3s ease;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.5rem;
+  gap: 8px;
 }
 
 .cancel-btn {
-  background: #f8f9fa;
-  color: #6c757d;
-  border: 2px solid #e9ecef;
+  background: rgba(255, 255, 255, 0.05);
+  color: #b0b0b0;
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .cancel-btn:hover {
-  background: #e9ecef;
-  transform: translateY(-1px);
+  background: rgba(255, 255, 255, 0.1);
+  transform: translateY(-2px);
 }
 
 .submit-btn {
-  background: linear-gradient(135deg, #28a745, #20c997);
-  color: white;
-  box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+  background: linear-gradient(135deg, #ff9800, #ffb74d);
+  color: #000000;
+  font-weight: 700;
+  box-shadow: 0 4px 15px rgba(255, 152, 0, 0.3);
 }
 
 .submit-btn:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(40, 167, 69, 0.4);
+  box-shadow: 0 6px 20px rgba(255, 152, 0, 0.4);
 }
 
 .submit-btn:disabled {
-  background: #6c757d;
+  background: rgba(255, 152, 0, 0.3);
+  color: rgba(0, 0, 0, 0.5);
   cursor: not-allowed;
   transform: none;
   box-shadow: none;
@@ -222,29 +245,57 @@
 
 /* Rewards Info */
 .rewards-info {
-  padding: 0 2rem 2rem;
+  padding: 0 30px 30px;
 }
 
 .rewards-card {
-  background: linear-gradient(135deg, #fff3cd, #ffeaa7);
-  border: 1px solid #ffd43b;
-  border-radius: 12px;
-  padding: 1.5rem;
+  background: linear-gradient(135deg, rgba(255, 152, 0, 0.1), rgba(255, 183, 77, 0.05));
+  border: 1px solid rgba(255, 152, 0, 0.3);
+  border-radius: 15px;
+  padding: 20px;
+  position: relative;
+  overflow: hidden;
+}
+
+.rewards-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #ff9800, #ffb74d);
+}
+
+.rewards-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.rewards-icon {
+  font-size: 1.3rem;
+  color: #ffb74d;
 }
 
 .rewards-card h4 {
-  margin: 0 0 1rem 0;
-  color: #856404;
-  font-size: 1.125rem;
+  margin: 0;
+  color: #ff9800;
+  font-size: 1.1rem;
   font-weight: 600;
+}
+
+.rewards-details {
+  margin-bottom: 15px;
 }
 
 .reward-item {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0.5rem 0;
-  border-bottom: 1px solid rgba(255, 212, 59, 0.3);
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(255, 152, 0, 0.2);
 }
 
 .reward-item:last-child {
@@ -252,49 +303,77 @@
 }
 
 .reward-type {
-  color: #856404;
+  color: #ffffff;
   font-weight: 500;
+  font-size: 0.95rem;
 }
 
 .reward-coins {
-  color: #f59e0b;
+  color: #ffb74d;
   font-weight: 600;
+  font-size: 0.95rem;
 }
 
 .reward-total {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding-top: 0.75rem;
-  margin-top: 0.75rem;
-  border-top: 2px solid rgba(255, 212, 59, 0.5);
-  color: #856404;
+  padding-top: 12px;
+  margin-top: 12px;
+  border-top: 2px solid rgba(255, 152, 0, 0.3);
+  color: #ffffff;
+}
+
+.total-coins {
+  color: #ffb74d;
+  font-size: 1.1rem;
+}
+
+.rewards-note {
+  background: rgba(255, 183, 77, 0.1);
+  border: 1px solid rgba(255, 183, 77, 0.2);
+  border-radius: 8px;
+  padding: 12px 15px;
+  text-align: center;
+}
+
+.rewards-note p {
+  margin: 0;
+  color: #ffb74d;
+  font-size: 0.9rem;
+  font-weight: 500;
 }
 
 /* Responsive Design */
 @media (max-width: 768px) {
   .schedule-pickup-overlay {
-    padding: 10px;
+    padding: 15px;
   }
 
   .schedule-pickup-modal {
     max-height: 95vh;
+    max-width: 100%;
   }
 
   .schedule-pickup-header {
-    padding: 1.25rem 1.5rem;
+    padding: 20px 25px;
+    flex-direction: column;
+    gap: 15px;
+    text-align: center;
+  }
+
+  .header-content {
+    flex-direction: column;
+    text-align: center;
+    gap: 10px;
   }
 
   .schedule-pickup-header h2 {
-    font-size: 1.25rem;
+    font-size: 1.3rem;
   }
 
   .schedule-pickup-form {
-    padding: 1.5rem;
-  }
-
-  .waste-type-grid {
-    grid-template-columns: repeat(2, 1fr);
+    padding: 25px;
   }
 
   .form-actions {
@@ -302,20 +381,56 @@
   }
 
   .rewards-info {
-    padding: 0 1.5rem 1.5rem;
+    padding: 0 25px 25px;
   }
 }
 
 @media (max-width: 480px) {
-  .waste-type-grid {
-    grid-template-columns: 1fr;
+  .schedule-pickup-overlay {
+    padding: 10px;
   }
 
   .schedule-pickup-header {
-    padding: 1rem 1.25rem;
+    padding: 20px;
   }
 
   .schedule-pickup-form {
-    padding: 1.25rem;
+    padding: 20px;
   }
+
+  .rewards-info {
+    padding: 0 20px 20px;
+  }
+
+  .form-group input,
+  .form-group select,
+  .form-group textarea {
+    padding: 10px 14px;
+    font-size: 0.95rem;
+  }
+
+  .cancel-btn,
+  .submit-btn {
+    padding: 12px 16px;
+    font-size: 0.95rem;
+  }
+}
+
+/* Custom scrollbar for modal */
+.schedule-pickup-modal::-webkit-scrollbar {
+  width: 6px;
+}
+
+.schedule-pickup-modal::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 3px;
+}
+
+.schedule-pickup-modal::-webkit-scrollbar-thumb {
+  background: rgba(255, 152, 0, 0.3);
+  border-radius: 3px;
+}
+
+.schedule-pickup-modal::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 152, 0, 0.5);
 }

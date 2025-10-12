@@ -17,6 +17,9 @@ import {
   FaHandshake,
   FaStore,
   FaCog,
+  FaTools,
+  FaCar,
+  FaCartArrowDown,
 } from 'react-icons/fa';
 import './Navbar.css';
 
@@ -96,19 +99,19 @@ const Navbar: React.FC<NavbarProps> = ({
   const notifications = [
     {
       id: 1,
-      message: 'Your pickup request has been confirmed',
+      message: 'Your service request has been confirmed',
       time: '5 min ago',
       read: false,
     },
     {
       id: 2,
-      message: 'You earned 50 coins for plastic waste',
+      message: 'Your vehicle is ready for pickup',
       time: '1 hour ago',
       read: false,
     },
     {
       id: 3,
-      message: 'New eco-friendly products available',
+      message: 'New service packages available',
       time: '2 hours ago',
       read: true,
     },
@@ -120,8 +123,8 @@ const Navbar: React.FC<NavbarProps> = ({
 
   return (
     <>
-      <nav className="navbar navbar-success">
-        {/* ✅ Show Hamburger only after login */}
+      <nav className="navbar-janatha">
+        {/* Show Hamburger only after login */}
         {isLoggedIn && (
           <button
             className="hamburger-menu-btn"
@@ -136,10 +139,10 @@ const Navbar: React.FC<NavbarProps> = ({
           </button>
         )}
 
-        {/* ✅ Brand always visible */}
+        {/* Brand always visible */}
         <Link className="navbar-brand" to="/">
-          <FaRecycle className="brand-icon" />
-          <span className="brand-text">GreenCollet</span>
+          
+          <span className="brand-text">Janatha Garage</span>
         </Link>
 
         <div className="navbar-content">
@@ -162,7 +165,7 @@ const Navbar: React.FC<NavbarProps> = ({
                 <div className="coins-display">
                   <FaCoins className="coins-icon" />
                   <span className="coins-amount">{user?.coins || 250}</span>
-                  <span className="coins-label">Coins</span>
+                  <span className="coins-label">Points</span>
                 </div>
               )}
 
@@ -278,8 +281,8 @@ const Navbar: React.FC<NavbarProps> = ({
       <div className={`mobile-menu ${menuOpen ? 'menu-open' : ''}`}>
         <div className="mobile-menu-header">
           <div className="mobile-menu-brand">
-            <FaRecycle className="mobile-menu-icon" />
-            <span className="mobile-menu-title">GreenCollect</span>
+            
+            <span className="mobile-menu-title">Janatha Garage</span>
           </div>
         </div>
 
@@ -301,7 +304,7 @@ const Navbar: React.FC<NavbarProps> = ({
                 onClick={() => handleTabChange('bookings')}
               >
                 <FaCalendar className="mobile-menu-item-icon" />
-                <span>Book Pickups</span>
+                <span>Book Service</span>
               </button>
 
               <button
@@ -316,7 +319,7 @@ const Navbar: React.FC<NavbarProps> = ({
                 className={`mobile-menu-item ${activeTab === 'products' ? 'active' : ''}`}
                 onClick={() => handleTabChange('products')}
               >
-                <FaShoppingBag className="mobile-menu-item-icon" />
+                <FaCartArrowDown className="mobile-menu-item-icon" />
                 <span>Eco Store</span>
               </button>
             </>
@@ -329,7 +332,7 @@ const Navbar: React.FC<NavbarProps> = ({
               onClick={() => handleTabChange('requests')}
             >
               <FaTruck className="mobile-menu-item-icon" />
-              <span>Manage Requests</span>
+              <span>Service Requests</span>
             </button>
           )}
 
@@ -349,7 +352,7 @@ const Navbar: React.FC<NavbarProps> = ({
                 onClick={() => handleTabChange('products')}
               >
                 <FaStore className="mobile-menu-item-icon" />
-                <span>Product Management</span>
+                <span>Inventory Management</span>
               </button>
 
               <button
@@ -376,7 +379,7 @@ const Navbar: React.FC<NavbarProps> = ({
                   onClick={() => handleTabChange('products')}
                 >
                   <FaStore />
-                  <span>Add Product</span>
+                  <span>Add Part</span>
                 </button>
                 <button 
                   className="quick-action-btn"

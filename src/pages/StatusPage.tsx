@@ -9,7 +9,12 @@ import {
     FaTimesCircle,
     FaSearch,
     FaFilter,
-    FaChevronLeft
+    FaChevronLeft,
+    FaCoins,
+    FaChartLine,
+    FaSync,
+    FaDownload,
+    FaPrint
 } from 'react-icons/fa';
 
 interface Pickup {
@@ -22,6 +27,8 @@ interface Pickup {
     collector?: string;
     estimatedTime?: string;
     trackingNumber: string;
+    coinsEarned?: number;
+    efficiency?: number;
 }
 
 const StatusPage: React.FC = () => {
@@ -37,7 +44,9 @@ const StatusPage: React.FC = () => {
             address: '123 Main St, City',
             status: 'completed',
             collector: 'John Doe',
-            trackingNumber: 'GC-2025-001'
+            trackingNumber: 'JG-2025-001',
+            coinsEarned: 50,
+            efficiency: 95
         },
         {
             id: 2,
@@ -48,7 +57,9 @@ const StatusPage: React.FC = () => {
             status: 'in-progress',
             collector: 'Jane Smith',
             estimatedTime: '30-45 mins',
-            trackingNumber: 'GC-2025-002'
+            trackingNumber: 'JG-2025-002',
+            coinsEarned: 30,
+            efficiency: 87
         },
         {
             id: 3,
@@ -58,9 +69,19 @@ const StatusPage: React.FC = () => {
             address: '789 Pine Rd, Village',
             status: 'scheduled',
             estimatedTime: 'Tomorrow, 2:00 PM',
-            trackingNumber: 'GC-2025-003'
+            trackingNumber: 'JG-2025-003',
+            coinsEarned: 40,
+            efficiency: 92
         }
     ];
+
+    // Stats data
+    const statusStats = {
+        total: pickups.length,
+        completed: pickups.filter(p => p.status === 'completed').length,
+        inProgress: pickups.filter(p => p.status === 'in-progress').length,
+        scheduled: pickups.filter(p => p.status === 'scheduled').length
+    };
 
     const getStatusIcon = (status: string) => {
         switch (status) {
@@ -94,8 +115,8 @@ const StatusPage: React.FC = () => {
 
     const filteredPickups = pickups.filter(pickup => {
         const matchesSearch = pickup.trackingNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                            pickup.type.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                            pickup.address.toLowerCase().includes(searchTerm.toLowerCase());
+            pickup.type.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            pickup.address.toLowerCase().includes(searchTerm.toLowerCase());
         const matchesFilter = statusFilter === 'all' || pickup.status === statusFilter;
         return matchesSearch && matchesFilter;
     });
@@ -110,11 +131,52 @@ const StatusPage: React.FC = () => {
                         Back to Dashboard
                     </button>
                     <h1 className="page-title">Pickup Status & Tracking</h1>
-                    <p className="page-subtitle">Track your waste pickup orders and view their current status</p>
+                    <p className="page-subtitle">Track your waste pickup orders and view their current status in real-time</p>
                 </div>
             </div>
 
+            {/* Stats Overview */}
+            <div className="status-stats">
+                <div className="stat-card">
+                    <div className="stat-number">{statusStats.total}</div>
+                    <div className="stat-label">Total Pickups</div>
+                </div>
+                <div className="stat-card">
+                    <div className="stat-number">{statusStats.completed}</div>
+                    <div className="stat-label">Completed</div>
+                </div>
+                <div className="stat-card">
+                    <div className="stat-number">{statusStats.inProgress}</div>
+                    <div className="stat-label">In Progress</div>
+                </div>
+                <div className="stat-card">
+                    <div className="stat-number">{statusStats.scheduled}</div>
+                    <div className="stat-label">Scheduled</div>
+                </div>
+            </div>
+
+            {/* Quick Actions */}
+            <div className="quick-actions">
+                <button className="quick-action-btn">
+                    <FaSync />
+                    Refresh Status
+                </button>
+                <button className="quick-action-btn">
+                    <FaDownload />
+                    Export Data
+                </button>
+                <button className="quick-action-btn">
+                    <FaPrint />
+                    Print Report
+                </button>
+                <button className="quick-action-btn">
+                    <FaChartLine />
+                    View Analytics
+                </button>
+            </div>
+
             {/* Search and Filter */}
+            {/* Search and Filter Section */}
             <div className="controls-section">
                 <div className="search-container">
                     <FaSearch className="search-icon" />
@@ -126,19 +188,24 @@ const StatusPage: React.FC = () => {
                         onChange={(e) => setSearchTerm(e.target.value)}
                     />
                 </div>
-                <div className="filter-container">
-                    <FaFilter className="filter-icon" />
-                    <select
-                        className="filter-select"
-                        value={statusFilter}
-                        onChange={(e) => setStatusFilter(e.target.value)}
-                    >
-                        <option value="all">All Status</option>
-                        <option value="scheduled">Scheduled</option>
-                        <option value="in-progress">In Progress</option>
-                        <option value="completed">Completed</option>
-                        <option value="cancelled">Cancelled</option>
-                    </select>
+
+                {/* Enhanced Filter with Label */}
+                <div className="filter-group">
+                    <span className="filter-label">Filter by Status</span>
+                    <div className="filter-container">
+                        
+                        <select
+                            className="filter-select"
+                            value={statusFilter}
+                            onChange={(e) => setStatusFilter(e.target.value)}
+                        >
+                            <option value="all">All Status</option>
+                            <option value="scheduled">Scheduled</option>
+                            <option value="in-progress">In Progress</option>
+                            <option value="completed">Completed</option>
+                            <option value="cancelled">Cancelled</option>
+                        </select>
+                    </div>
                 </div>
             </div>
 
@@ -146,7 +213,7 @@ const StatusPage: React.FC = () => {
             <div className="pickups-container">
                 {filteredPickups.length === 0 ? (
                     <div className="empty-state">
-                        <div className="empty-icon">📦</div>
+                        <div className="empty-icon">🚛</div>
                         <h3>No pickups found</h3>
                         <p>No pickups match your search criteria</p>
                     </div>
@@ -179,6 +246,22 @@ const StatusPage: React.FC = () => {
                                             <span className="detail-value">{pickup.weight}</span>
                                         </div>
                                     </div>
+                                    {pickup.coinsEarned && (
+                                        <div className="detail-item">
+                                            <div className="coins-badge">
+                                                <FaCoins className="coins-icon" />
+                                                <span className="detail-value">+{pickup.coinsEarned}</span>
+                                            </div>
+                                        </div>
+                                    )}
+                                    {pickup.efficiency && (
+                                        <div className="detail-item">
+                                            <div className="efficiency-display">
+                                                <span className="detail-label">Efficiency</span>
+                                                <span className="detail-value">{pickup.efficiency}%</span>
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
 
                                 <div className="detail-row">
@@ -236,15 +319,15 @@ const StatusPage: React.FC = () => {
                             <div className="action-buttons">
                                 {pickup.status === 'scheduled' && (
                                     <>
-                                        <button className="btn btn-primary">Reschedule</button>
-                                        <button className="btn btn-secondary">Cancel</button>
+                                        <button className="btn btn-yellow">Reschedule</button>
+                                        <button className="btn btn-blue">Cancel</button>
                                     </>
                                 )}
                                 {pickup.status === 'in-progress' && (
-                                    <button className="btn btn-primary">Track Live</button>
+                                    <button className="btn btn-yellow">Track Live</button>
                                 )}
                                 {pickup.status === 'completed' && (
-                                    <button className="btn btn-primary">View Details</button>
+                                    <button className="btn btn-yellow">View Details</button>
                                 )}
                                 <button className="btn btn-outline">Contact Support</button>
                             </div>

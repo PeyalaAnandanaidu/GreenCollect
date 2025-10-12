@@ -56,33 +56,129 @@ body {
   gap: 1rem; /* space between login & register */
 }
 
-.login-btn, .register-btn {
-  padding: 0.6rem 1.2rem;
+/* Login button */
+.login-btn {
+  background: linear-gradient(135deg, #ffcc00 0%, #ffaa00 100%);
+  color: #000000;
+  border: 2px solid #ffcc00;
+  padding: 10px 24px;
   border-radius: 8px;
-  font-weight: 600;
+  font-weight: 700;
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   text-decoration: none;
-  border: 2px solid #10b981;
-  transition: all 0.3s ease;
+  display: inline-block;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
 }
 
-.login-btn {
-   background: #10b981;
-  color: white;
+.login-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  transition: left 0.5s;
+}
+
+.login-btn:hover::before {
+  left: 100%;
 }
 
 .login-btn:hover {
-  background: transparent;
-  color: #10b981;
+  background: linear-gradient(135deg, #000000 0%, #333333 100%);
+  color: #ffcc00;
+  border-color: #ffcc00;
+  transform: translateY(-3px);
+  box-shadow: 0 8px 25px rgba(255, 204, 0, 0.4);
 }
 
+.login-btn:active {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 15px rgba(255, 204, 0, 0.3);
+}
+
+/* Register button */
 .register-btn {
-  background: #10b981;
-  color: white;
+  background: linear-gradient(135deg, #000000 0%, #333333 100%);
+  color: #ffcc00;
+  border: 2px solid #ffcc00;
+  padding: 10px 24px;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  text-decoration: none;
+  display: inline-block;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+  margin-right: 15px;
+}
+
+.register-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 204, 0, 0.2), transparent);
+  transition: left 0.5s;
+}
+
+.register-btn:hover::before {
+  left: 100%;
 }
 
 .register-btn:hover {
-  background: transparent;
-  color: #10b981;
+  background: linear-gradient(135deg, #ffcc00 0%, #ffaa00 100%);
+  color: #000000;
+  border-color: #ffcc00;
+  transform: translateY(-3px);
+  box-shadow: 0 8px 25px rgba(255, 204, 0, 0.4);
+}
+
+.register-btn:active {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 15px rgba(255, 204, 0, 0.3);
+}
+
+/* Auth buttons container improvements */
+.auth-buttons {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+/* Optional: Add a subtle animation on page load */
+@keyframes buttonEntrance {
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.login-btn, .register-btn {
+  animation: buttonEntrance 0.6s ease-out;
+}
+
+.register-btn {
+  animation-delay: 0.1s;
+  animation-fill-mode: both;
 }
 
 /* ====================== Home.css ====================== */
