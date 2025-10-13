@@ -24,7 +24,7 @@ interface CollectorRequest {
     status: 'pending' | 'approved' | 'rejected';
 }
 
-interface RecycledPartner {
+    interface RecycledPartner {
     id: number;
     name: string;
     type: string;
@@ -32,6 +32,7 @@ interface RecycledPartner {
     contact: string;
     wasteProcessed: string;
     rating: number;
+    establishingYear?: number;
 }
 
 const AdminDashboard: React.FC<AdminDashboardProps> = ({ activeTab }) => {
@@ -44,7 +45,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ activeTab }) => {
         { id: 4, name: 'Meera Reddy', completedPickups: 29, rating: 4.6 }
     ]);
 
-    const [recycledPartners] = useState<RecycledPartner[]>([
+    const [recycledPartners, setRecycledPartners] = useState<RecycledPartner[]>([
         {
             id: 1,
             name: 'GreenTech Recyclers',
@@ -73,6 +74,38 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ activeTab }) => {
             rating: 4.9
         }
     ]);
+
+    const [showAddPartner, setShowAddPartner] = useState(false);
+    const [partnerForm, setPartnerForm] = useState({
+        name: '',
+        type: '',
+        location: '',
+        contact: '',
+        wasteProcessed: '',
+        rating: 0,
+        establishingYear: new Date().getFullYear()
+    });
+
+    const handleOpenAddPartner = () => {
+        setPartnerForm({ name: '', type: '', location: '', contact: '', wasteProcessed: '', rating: 0, establishingYear: new Date().getFullYear() });
+        setShowAddPartner(true);
+    };
+
+    const handleAddPartnerSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        const newPartner: RecycledPartner = {
+            id: Date.now(),
+            name: partnerForm.name,
+            type: partnerForm.type,
+            location: partnerForm.location,
+            contact: partnerForm.contact,
+            wasteProcessed: partnerForm.wasteProcessed || '0 tons',
+            rating: partnerForm.rating || 0,
+            establishingYear: partnerForm.establishingYear
+        };
+        setRecycledPartners(prev => [newPartner, ...prev]);
+        setShowAddPartner(false);
+    };
 
     // Fetch collector requests from backend
     const fetchCollectorRequests = async () => {
@@ -546,10 +579,58 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ activeTab }) => {
                             </div>
 
                             <div className="add-partner-section">
-                                <button className="btn btn-success">
+                                <button className="btn btn-success" onClick={handleOpenAddPartner}>
                                     <FaPlus /> Add New Partner
                                 </button>
                             </div>
+
+                            {/* Add Partner Modal */}
+                            {showAddPartner && (
+                                <div className="partner-form-overlay">
+                                    <div className="partner-form">
+                                        <div className="form-header">
+                                            <h3>Add New Partner</h3>
+                                            <button className="close-btn" onClick={() => setShowAddPartner(false)}>×</button>
+                                        </div>
+                                        <form onSubmit={handleAddPartnerSubmit}>
+                                            <div className="form-grid">
+                                                <div className="form-group">
+                                                    <label>Company Name</label>
+                                                    <input type="text" value={partnerForm.name} onChange={e => setPartnerForm({...partnerForm, name: e.target.value})} required />
+                                                </div>
+                                                <div className="form-group">
+                                                    <label>Establishing Year</label>
+                                                    <input type="number" value={partnerForm.establishingYear} onChange={e => setPartnerForm({...partnerForm, establishingYear: parseInt(e.target.value || '0')})} min="1900" max={new Date().getFullYear()} />
+                                                </div>
+                                                <div className="form-group full-width">
+                                                    <label>Type (e.g., Plastic Recycling)</label>
+                                                    <input type="text" value={partnerForm.type} onChange={e => setPartnerForm({...partnerForm, type: e.target.value})} required />
+                                                </div>
+                                                <div className="form-group">
+                                                    <label>Location</label>
+                                                    <input type="text" value={partnerForm.location} onChange={e => setPartnerForm({...partnerForm, location: e.target.value})} required />
+                                                </div>
+                                                <div className="form-group">
+                                                    <label>Contact Email/Phone</label>
+                                                    <input type="text" value={partnerForm.contact} onChange={e => setPartnerForm({...partnerForm, contact: e.target.value})} required />
+                                                </div>
+                                                <div className="form-group">
+                                                    <label>Waste Processed (e.g., 50 tons)</label>
+                                                    <input type="text" value={partnerForm.wasteProcessed} onChange={e => setPartnerForm({...partnerForm, wasteProcessed: e.target.value})} />
+                                                </div>
+                                                <div className="form-group">
+                                                    <label>Rating (0-5)</label>
+                                                    <input type="number" value={partnerForm.rating} onChange={e => setPartnerForm({...partnerForm, rating: parseFloat(e.target.value || '0')})} min="0" max="5" step="0.1" />
+                                                </div>
+                                            </div>
+                                            <div className="form-actions">
+                                                <button type="button" className="btn btn-secondary" onClick={() => setShowAddPartner(false)}>Cancel</button>
+                                                <button type="submit" className="btn btn-primary">Add Partner</button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     </div>
                 )}
