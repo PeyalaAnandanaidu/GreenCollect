@@ -7,6 +7,16 @@
   background: #000000;
 }
 
+/* Remove scrollbars globally */
+.home-container::-webkit-scrollbar {
+  display: none;
+}
+
+.home-container {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
 /* Section Base Styles */
 .section {
   padding: 5rem 0;
@@ -86,15 +96,22 @@
   opacity: 0;
   transform: scale(0.95);
   transition: all 1s cubic-bezier(0.4, 0, 0.2, 1);
-  overflow: auto;              /* or overflow: scroll */
-  -ms-overflow-style: none;    /* IE and Edge */
-  scrollbar-width: none; 
-
+  overflow: hidden; /* Changed from auto/scroll to hidden */
 }
 
 .hero-section.visible {
   opacity: 1;
   transform: scale(1);
+}
+
+/* Remove scrollbars from hero section */
+.hero-section::-webkit-scrollbar {
+  display: none;
+}
+
+.hero-section {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
 
 .hero-background {
@@ -1173,4 +1190,26 @@ html {
   75% {
     transform: translateY(-20px) translateX(10px);
   }
+}
+
+/* Remove scrollbars from all elements */
+* {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+}
+
+*::-webkit-scrollbar {
+  display: none; /* Chrome, Safari and Opera */
+}
+
+/* Ensure no scrollbars on body and html */
+html, body {
+  overflow: -moz-scrollbars-none; /* Old Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}
+
+html::-webkit-scrollbar,
+body::-webkit-scrollbar {
+  display: none; /* Chrome, Safari and Opera */
 }

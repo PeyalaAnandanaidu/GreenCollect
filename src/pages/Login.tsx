@@ -6,7 +6,7 @@ import { FaEnvelope, FaLock, FaEye, FaEyeSlash, FaArrowRight, FaRecycle, FaLeaf,
 import { useAuth } from '../contexts/AuthContext';
 import './Login.css';
 
-const Login = () => {
+const Login = ({ onLogin }: { onLogin?: () => void }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -38,11 +38,12 @@ const Login = () => {
         throw new Error('Invalid response from server');
       }
 
-      // Use the auth context to login
-      login(user, token, rememberMe);
+  // Use the auth context to login
+  login(user, token, rememberMe);
       
-      // Redirect to dashboard
-      navigate('/dashboard');
+  // Notify parent (optional) and redirect to dashboard
+  if (onLogin) onLogin();
+  navigate('/dashboard');
       
     } catch (err: any) {
       console.error('Login error details:', err);

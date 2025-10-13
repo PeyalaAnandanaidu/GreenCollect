@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
+import ElevenLabsEmbed from './components/ElevenLabsEmbed';
 import Home from './pages/Home';
 import Login from './pages/Login';
 import Register from './pages/Register';
@@ -262,6 +263,8 @@ function AppContent() {
         </Routes>
       </div>
       <Footer />
+      {/* ElevenLabs ConvAI widget (single integration) */}
+      <ElevenLabsEmbed isLoggedIn={!!user} />
     </Router>
   );
 }
