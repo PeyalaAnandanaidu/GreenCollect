@@ -66,33 +66,61 @@ router.post('/', upload.single('productImage'), async (req, res) => {
     });
   }
 });
-router.put('/update/:id', async (req, res) => {
-    try {
-        const { id } = req.params;
-        const updateData = req.body;
+router.put('/update/:id', upload.single('productImage'), async (req, res) => {
+  console.log('Update Product Request Body:', req.body);
+  try {
+    const { id } = req.params;
 
-        // { new: true } returns the updated document
-        // runValidators ensures the updated data respects the schema rules
-        const updatedProduct = await Product.findByIdAndUpdate(
-            id,
-            updateData,
-            { new: true, runValidators: true }
+    // Upload image to Cloudinary if a new file is provided
+    let uploadResult = null;
+    if (req.file) {
+      uploadResult = await new Promise((resolve, reject) => {
+        const uploadStream = cloudinary.uploader.upload_stream(
+          { resource_type: 'image', folder: 'products' },
+          (error, result) => {
+            if (error) return reject(error);
+            resolve(result);
+          }
         );
-
-        if (!updatedProduct) {
-            return res.status(404).json({ message: 'Product not found' });
-        }
-
-        res.status(200).json({
-            message: 'Product updated successfully',
-            product: updatedProduct
-        });
-
-    } catch (error) {
-        console.error('Error updating product:', error);
-        res.status(500).json({ message: 'Server error', error: error.message });
+        uploadStream.end(req.file.buffer);
+      });
     }
+
+    // Build update object
+    const updateData = {
+      productName: req.body.productName,
+      description: req.body.description,
+      price: req.body.price,
+      coinsRequired: req.body.coinsRequired,
+      category: req.body.category,
+      stockQuantity: req.body.stockQuantity,
+    };
+
+    // Add image fields only if a new image is uploaded
+    if (uploadResult) {
+      updateData.productImage = uploadResult.secure_url;
+      updateData.cloudinaryId = uploadResult.public_id;
+    }
+
+    const updatedProduct = await Product.findByIdAndUpdate(id, updateData, {
+      new: true,
+      runValidators: true,
+    });
+
+    if (!updatedProduct) {
+      return res.status(404).json({ message: 'Product not found' });
+    }
+
+    res.status(200).json({
+      message: 'Product updated successfully',
+      product: updatedProduct,
+    });
+  } catch (error) {
+    console.error('Error updating product:', error);
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
 });
+
 router.get('/', async (req, res) => {
     try {
         const products = await Product.find(); // Fetch all documents in Product collection

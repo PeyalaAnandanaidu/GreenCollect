@@ -1,9 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import './ProductManagement.css';
 import { FaPlus, FaEdit, FaTrash, FaImage, FaRupeeSign } from 'react-icons/fa';
-
 interface Product {
-    id: number;
+    id: string; // changed from number to string
     name: string;
     description: string;
     price: number;
@@ -15,41 +14,42 @@ interface Product {
 }
 
 const ProductManagement = () => {
-    const [products, setProducts] = useState<Product[]>([
-        {
-            id: 1,
-            name: 'Eco-Friendly Water Bottle',
-            description: 'Reusable stainless steel water bottle, 1L capacity',
-            price: 299,
-            coins: 150,
-            category: 'Lifestyle',
-            image: '',
-            stock: 50,
-            isActive: true
-        },
-        {
-            id: 2,
-            name: 'Bamboo Toothbrush Set',
-            description: 'Set of 4 biodegradable bamboo toothbrushes',
-            price: 199,
-            coins: 80,
-            category: 'Personal Care',
-            image: '',
-            stock: 100,
-            isActive: true
-        },
-        {
-            id: 3,
-            name: 'Organic Cotton Tote Bag',
-            description: 'Large reusable shopping bag made from organic cotton',
-            price: 399,
-            coins: 200,
-            category: 'Fashion',
-            image: '',
-            stock: 30,
-            isActive: true
-        }
-    ]);
+const [products, setProducts] = useState<Product[]>([
+    {
+        id: '1',
+        name: 'Eco-Friendly Water Bottle',
+        description: 'Reusable stainless steel water bottle, 1L capacity',
+        price: 299,
+        coins: 150,
+        category: 'Lifestyle',
+        image: '',
+        stock: 50,
+        isActive: true
+    },
+    {
+        id: '2',
+        name: 'Bamboo Toothbrush Set',
+        description: 'Set of 4 biodegradable bamboo toothbrushes',
+        price: 199,
+        coins: 80,
+        category: 'Personal Care',
+        image: '',
+        stock: 100,
+        isActive: true
+    },
+    {
+        id: '3',
+        name: 'Organic Cotton Tote Bag',
+        description: 'Large reusable shopping bag made from organic cotton',
+        price: 399,
+        coins: 200,
+        category: 'Fashion',
+        image: '',
+        stock: 30,
+        isActive: true
+    }
+]);
+
 
     const [showAddForm, setShowAddForm] = useState(false);
     const [editingProduct, setEditingProduct] = useState<Product | null>(null);
@@ -60,62 +60,190 @@ const ProductManagement = () => {
         price: 0,
         coins: 0,
         category: '',
-        stock: 0
+        stock: 0,
+        imageFile: null as File | null, // new
     });
-
+    
+    const fetchProducts = async () => {
+        try {
+            const res = await fetch('http://localhost:4000/api/products'); // your GET route
+            const data = await res.json();
+    
+            if (!res.ok) throw new Error(data.message || 'Failed to fetch products');
+    
+            // Map backend fields to frontend Product interface
+            const mappedProducts: Product[] = data.products.map((p: any) => ({
+                id: p._id,  // assuming MongoDB _id
+                name: p.productName,
+                description: p.description,
+                price: p.price,
+                coins: p.coinsRequired,
+                category: p.category,
+                image: p.productImage || '',
+                stock: p.stockQuantity,
+                isActive: p.isActive ?? true
+            }));
+    
+            setProducts(mappedProducts);
+        } catch (err: any) {
+            console.error('Error fetching products:', err.message);
+        }
+    };
+    useEffect(() => {
+        fetchProducts();
+    }, []);    
     const categories = ['Lifestyle', 'Personal Care', 'Fashion', 'Home', 'Electronics', 'Other'];
 
-    const handleAddProduct = (e: React.FormEvent) => {
+    const handleAddProduct = async (e: React.FormEvent) => {
         e.preventDefault();
-        const newProduct: Product = {
-            id: products.length + 1,
-            ...formData,
-            image: '',
-            isActive: true
-        };
-        setProducts([...products, newProduct]);
-        setFormData({ name: '', description: '', price: 0, coins: 0, category: '', stock: 0 });
-        setShowAddForm(false);
-    };
-
-    const handleEditProduct = (product: Product) => {
-        setEditingProduct(product);
+      
+        const formPayload = new FormData();
+        formPayload.append('productName', formData.name);
+        formPayload.append('description', formData.description);
+        formPayload.append('price', formData.price.toString());
+        formPayload.append('coinsRequired', formData.coins.toString());
+        formPayload.append('category', formData.category);
+        formPayload.append('stockQuantity', formData.stock.toString());
+      
+        // if you add file input for image
+        if ((formData as any).imageFile) {
+          formPayload.append('productImage', (formData as any).imageFile);
+        }
+      
+        try {
+          const res = await fetch('http://localhost:4000/api/products', {
+            method: 'POST',
+            body: formPayload, // multipart/form-data
+          });
+      
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.message || 'Failed to create product');
+      
+          const newProduct: Product = {
+            id: data.product._id,
+            name: data.product.productName,
+            description: data.product.description,
+            price: data.product.price,
+            coins: data.product.coinsRequired,
+            category: data.product.category,
+            image: data.product.productImage || '',
+            stock: data.product.stockQuantity,
+            isActive: data.product.isActive ?? true,
+          };
+          
+          setProducts(prev => [...prev, newProduct]);
+          
+          setFormData({ name: '', description: '', price: 0, coins: 0, category: '', stock: 0,imageFile: null });
+          setShowAddForm(false);
+        } catch (err: any) {
+          console.error(err.message);
+        }
+      };
+      
+      const handleEditProduct = (product: Product) => {
+        setEditingProduct(product); // mark this product as being edited
         setFormData({
             name: product.name,
             description: product.description,
             price: product.price,
             coins: product.coins,
             category: product.category,
-            stock: product.stock
+            stock: product.stock,
+            imageFile: null // optional: user can upload a new image
         });
-        setShowAddForm(true);
+        setShowAddForm(true); // open the form overlay
     };
+    
+    
+    
 
-    const handleUpdateProduct = (e: React.FormEvent) => {
+    const handleUpdateProduct = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (editingProduct) {
-            setProducts(products.map(p => 
-                p.id === editingProduct.id 
-                    ? { ...p, ...formData }
-                    : p
-            ));
+        if (!editingProduct) return;
+      
+        const formPayload = new FormData();
+        formPayload.append('productName', formData.name);
+        formPayload.append('description', formData.description);
+        formPayload.append('price', formData.price.toString());
+        formPayload.append('coinsRequired', formData.coins.toString());
+        formPayload.append('category', formData.category);
+        formPayload.append('stockQuantity', formData.stock.toString());
+      
+        if (formData.imageFile) {
+            formPayload.append('productImage', formData.imageFile);
+        }
+      
+        try {
+            const res = await fetch(`http://localhost:4000/api/products/update/${editingProduct.id}`, {
+                method: 'PUT',
+                body: formPayload
+            });
+      
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.message || 'Failed to update product');
+      
+            // ✅ Map backend product to frontend format
+            const updatedProduct: Product = {
+                id: data.product._id,
+                name: data.product.productName,
+                description: data.product.description,
+                price: data.product.price,
+                coins: data.product.coinsRequired,
+                category: data.product.category,
+                image: data.product.productImage || '',
+                stock: data.product.stockQuantity,
+                isActive: data.product.isActive ?? true
+            };
+      
+            // ✅ Update local state
+            setProducts(prev =>
+                prev.map(p => (p.id === updatedProduct.id ? updatedProduct : p))
+            );
+      
             setEditingProduct(null);
-            setFormData({ name: '', description: '', price: 0, coins: 0, category: '', stock: 0 });
+            setFormData({
+                name: '',
+                description: '',
+                price: 0,
+                coins: 0,
+                category: '',
+                stock: 0,
+                imageFile: null
+            });
             setShowAddForm(false);
+        } catch (err: any) {
+            console.error('Error updating product:', err.message);
         }
     };
+    
 
-    const handleDeleteProduct = (productId: number) => {
-        if (window.confirm('Are you sure you want to delete this product?')) {
-            setProducts(products.filter(p => p.id !== productId));
-        }
-    };
-
-    const toggleProductStatus = (productId: number) => {
-        setProducts(products.map(p => 
-            p.id === productId ? { ...p, isActive: !p.isActive } : p
-        ));
-    };
+// Function to delete a product from backend
+const handleDeleteProduct = async (productId: string) => {
+    if (!window.confirm('Are you sure you want to delete this product?')) return;
+  
+    try {
+      const res = await fetch(`http://localhost:4000/api/products/delete/${productId}`, {
+        method: 'DELETE',
+      });
+  
+      const data = await res.json();
+  
+      if (!res.ok) throw new Error(data.message || 'Failed to delete product');
+  
+      // Remove the deleted product from local state
+      setProducts(prevProducts => prevProducts.filter(p => p.id !== productId));
+  
+      console.log('Product deleted successfully:', data.message);
+    } catch (err: any) {
+      console.error('Error deleting product:', err.message);
+    }
+  };
+  
+  const toggleProductStatus = (productId: string) => {
+    setProducts(products.map(p => 
+        p.id === productId ? { ...p, isActive: !p.isActive } : p
+    ));
+};
 
     const totalProducts = products.length;
     const activeProducts = products.filter(p => p.isActive).length;
@@ -132,7 +260,7 @@ const ProductManagement = () => {
                     className="btn btn-success"
                     onClick={() => {
                         setEditingProduct(null);
-                        setFormData({ name: '', description: '', price: 0, coins: 0, category: '', stock: 0 });
+                        setFormData({ name: '', description: '', price: 0, coins: 0, category: '', stock: 0 , imageFile: null });
                         setShowAddForm(true);
                     }}
                 >
@@ -243,7 +371,12 @@ const ProductManagement = () => {
                                     <div className="image-upload">
                                         <FaImage className="upload-icon" />
                                         <span>Click to upload product image</span>
-                                        <input type="file" accept="image/*" style={{ display: 'none' }} />
+                                        <input
+                                        type="file"
+                                        accept="image/*"
+                                        onChange={e => setFormData({...formData, imageFile: e.target.files?.[0] || null})}
+                                        />
+
                                     </div>
                                 </div>
                             </div>
@@ -318,18 +451,19 @@ const ProductManagement = () => {
                                     </td>
                                     <td>
                                         <div className="action-buttons">
-                                            <button 
+                                        <button 
                                                 className="btn btn-edit"
-                                                onClick={() => handleEditProduct(product)}
+                                                onClick={() => handleEditProduct(product)} // pass id
                                             >
                                                 <FaEdit />
                                             </button>
                                             <button 
                                                 className="btn btn-delete"
                                                 onClick={() => handleDeleteProduct(product.id)}
-                                            >
+                                                >
                                                 <FaTrash />
-                                            </button>
+                                                </button>
+
                                             <button 
                                                 className={`btn btn-status ${product.isActive ? 'btn-warning' : 'btn-success'}`}
                                                 onClick={() => toggleProductStatus(product.id)}

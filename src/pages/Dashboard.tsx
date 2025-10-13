@@ -16,10 +16,10 @@ const Dashboard: React.FC<DashboardProps> = ({ role, onLogout, activeTab }) => {
     return (
         <div className="dashboard-container">
             {role === 'user' && (
-                <UserDashboard activeTab={activeTab} />
+                <AdminDashboard activeTab={activeTab} />
             )}
             {role === 'collector' && (
-                <CollectorDashboard activeTab={activeTab} />
+                <AdminDashboard activeTab={activeTab} />
             )}
             {role === 'admin' && (
                 <AdminDashboard activeTab={activeTab} />
