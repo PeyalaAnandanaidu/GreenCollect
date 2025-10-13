@@ -441,3 +441,61 @@
 .schedule-pickup-modal::-webkit-scrollbar-thumb:hover {
   background: rgba(255, 152, 0, 0.5);
 }
+
+/* Error Banner */
+.error-banner {
+  background: #fee2e2;
+  border: 1px solid #fecaca;
+  color: #dc2626;
+  padding: 12px 16px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  animation: slideIn 0.3s ease-out;
+}
+
+.error-banner button {
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  cursor: pointer;
+  margin-left: auto;
+}
+
+/* Loading Spinner */
+.btn-icon.spinning {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Disabled States */
+button:disabled,
+input:disabled,
+select:disabled,
+textarea:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.submit-btn:disabled:not(.loading) {
+  background-color: #9ca3af;
+  cursor: not-allowed;
+}
+
+/* Animation for form elements */
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

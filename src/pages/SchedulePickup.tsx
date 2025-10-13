@@ -1,12 +1,13 @@
 import { useEffect, useState } from 'react';
 import './SchedulePickup.css';
-import { FaCalendar, FaTrash, FaMapMarkerAlt, FaCheckCircle, FaTimes, FaCoins } from 'react-icons/fa';
+import { FaCalendar, FaTrash, FaMapMarkerAlt, FaCheckCircle, FaTimes, FaCoins, FaSpinner } from 'react-icons/fa';
 
 interface SchedulePickupProps {
   onClose: () => void;
+  userId?: string; // Add userId prop
 }
 
-const SchedulePickup: React.FC<SchedulePickupProps> = ({ onClose }) => {
+const SchedulePickup: React.FC<SchedulePickupProps> = ({ onClose, userId }) => {
   const [formData, setFormData] = useState({
     pickupDate: '',
     wasteType: '',
@@ -16,6 +17,8 @@ const SchedulePickup: React.FC<SchedulePickupProps> = ({ onClose }) => {
     contactNumber: ''
   });
   const [mounted, setMounted] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
   useEffect(() => {
     const t = setTimeout(() => setMounted(true), 0);
@@ -32,11 +35,11 @@ const SchedulePickup: React.FC<SchedulePickupProps> = ({ onClose }) => {
   ];
 
   const weightOptions = [
-    { value: '1-2', label: '1-2 kg', coins: 15 },
-    { value: '3-5', label: '3-5 kg', coins: 35 },
-    { value: '5-10', label: '5-10 kg', coins: 65 },
-    { value: '10-20', label: '10-20 kg', coins: 120 },
-    { value: '20+', label: '20+ kg', coins: 250 }
+    { value: '1-2', label: '1-2 kg', coins: 15, numericWeight: 1.5 },
+    { value: '3-5', label: '3-5 kg', coins: 35, numericWeight: 4 },
+    { value: '5-10', label: '5-10 kg', coins: 65, numericWeight: 7.5 },
+    { value: '10-20', label: '10-20 kg', coins: 120, numericWeight: 15 },
+    { value: '20+', label: '20+ kg', coins: 250, numericWeight: 25 }
   ];
 
   const handleChange = (
@@ -47,13 +50,72 @@ const SchedulePickup: React.FC<SchedulePickupProps> = ({ onClose }) => {
       ...prev,
       [name]: value
     }));
+    // Clear error when user starts typing
+    if (error) setError('');
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Pickup scheduled:', formData);
-    alert('Pickup scheduled successfully! Our collector will contact you soon.');
-    onClose();
+    
+    if (!userId) {
+      setError('Please log in to schedule a pickup');
+      return;
+    }
+
+    setLoading(true);
+    setError('');
+
+    try {
+      // Get numeric weight from selected option
+      const weightOption = weightOptions.find(option => option.value === formData.weight);
+      const estimatedWeight = weightOption ? weightOption.numericWeight : 0;
+
+      // Prepare data for backend
+      const pickupDateTime = new Date(formData.pickupDate);
+      const requestData = {
+        userId: userId,
+        pickupDate: pickupDateTime.toISOString().split('T')[0], // YYYY-MM-DD
+        pickupTime: pickupDateTime.toTimeString().split(' ')[0], // HH:MM:SS
+        wasteType: formData.wasteType,
+        estimatedWeight: estimatedWeight,
+        pickupAddress: formData.address,
+        contactNumber: formData.contactNumber || 'Not provided',
+        instructions: formData.specialInstructions || 'None'
+      };
+
+      console.log('Submitting pickup request:', requestData);
+
+      const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+      
+      const response = await fetch('http://localhost:4000/api/waste-requests', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(requestData)
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.message || 'Failed to schedule pickup');
+      }
+
+      console.log('Pickup scheduled successfully:', result);
+      
+      // Show success message
+      alert('✅ Pickup scheduled successfully! Our collector will contact you soon.');
+      
+      // Close the modal
+      onClose();
+
+    } catch (err: any) {
+      console.error('Error scheduling pickup:', err);
+      setError(err.message || 'Failed to schedule pickup. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const isFormValid = formData.pickupDate && formData.wasteType && formData.weight && formData.address;
@@ -63,8 +125,6 @@ const SchedulePickup: React.FC<SchedulePickupProps> = ({ onClose }) => {
     const weightOption = weightOptions.find(option => option.value === formData.weight);
     return weightOption ? weightOption.coins : 0;
   };
-
-  // removed unused getWasteTypeColor to keep build clean
 
   return (
     <div className="schedule-pickup-overlay">
@@ -77,12 +137,20 @@ const SchedulePickup: React.FC<SchedulePickupProps> = ({ onClose }) => {
               <p>Fill in the details to schedule your collection</p>
             </div>
           </div>
-          <button className="close-btn" onClick={onClose}>
+          <button className="close-btn" onClick={onClose} disabled={loading}>
             <FaTimes />
           </button>
         </div>
 
         <div className="schedule-pickup-content">
+          {error && (
+            <div className="error-banner">
+              <FaTimes />
+              <span>{error}</span>
+              <button onClick={() => setError('')}>×</button>
+            </div>
+          )}
+
           <form onSubmit={handleSubmit} className={`schedule-pickup-form ${mounted ? 'animate-in delay-1' : ''}`}>
             {/* Pickup Date */}
             <div className="form-group">
@@ -98,6 +166,7 @@ const SchedulePickup: React.FC<SchedulePickupProps> = ({ onClose }) => {
                 onChange={handleChange}
                 required
                 min={new Date().toISOString().slice(0, 16)}
+                disabled={loading}
               />
             </div>
 
@@ -113,6 +182,7 @@ const SchedulePickup: React.FC<SchedulePickupProps> = ({ onClose }) => {
                 value={formData.wasteType}
                 onChange={handleChange}
                 required
+                disabled={loading}
               >
                 <option value="">Select waste type</option>
                 {wasteTypes.map(type => (
@@ -135,11 +205,12 @@ const SchedulePickup: React.FC<SchedulePickupProps> = ({ onClose }) => {
                 value={formData.weight}
                 onChange={handleChange}
                 required
+                disabled={loading}
               >
                 <option value="">Select weight range</option>
                 {weightOptions.map(option => (
                   <option key={option.value} value={option.value}>
-                    {option.label}
+                    {option.label} (+{option.coins} coins)
                   </option>
                 ))}
               </select>
@@ -159,6 +230,7 @@ const SchedulePickup: React.FC<SchedulePickupProps> = ({ onClose }) => {
                 onChange={handleChange}
                 placeholder="Enter your complete address"
                 required
+                disabled={loading}
               />
             </div>
 
@@ -172,6 +244,7 @@ const SchedulePickup: React.FC<SchedulePickupProps> = ({ onClose }) => {
                 value={formData.contactNumber}
                 onChange={handleChange}
                 placeholder="Enter your contact number"
+                disabled={loading}
               />
             </div>
 
@@ -185,21 +258,36 @@ const SchedulePickup: React.FC<SchedulePickupProps> = ({ onClose }) => {
                 onChange={handleChange}
                 placeholder="Any special instructions for the collector..."
                 rows={3}
+                disabled={loading}
               />
             </div>
 
             {/* Form Actions */}
             <div className="form-actions">
-              <button type="button" className="cancel-btn" onClick={onClose}>
+              <button 
+                type="button" 
+                className="cancel-btn" 
+                onClick={onClose}
+                disabled={loading}
+              >
                 Cancel
               </button>
               <button 
                 type="submit" 
                 className="submit-btn"
-                disabled={!isFormValid}
+                disabled={!isFormValid || loading}
               >
-                <FaCheckCircle className="btn-icon" />
-                Schedule Pickup
+                {loading ? (
+                  <>
+                    <FaSpinner className="btn-icon spinning" />
+                    Scheduling...
+                  </>
+                ) : (
+                  <>
+                    <FaCheckCircle className="btn-icon" />
+                    Schedule Pickup
+                  </>
+                )}
               </button>
             </div>
           </form>

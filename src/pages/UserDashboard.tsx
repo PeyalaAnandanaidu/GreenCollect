@@ -94,8 +94,28 @@ const UserDashboard: React.FC<UserDashboardProps> = ({ activeTab }) => {
     const [searchTerm, setSearchTerm] = useState('');
     const [statusFilter, setStatusFilter] = useState<string>('all');
     const [mounted, setMounted] = useState(false);
+    const [user, setUser] = useState<any>(null);
 
+    // Load user data from storage
     useEffect(() => {
+        const loadUserData = () => {
+            try {
+                const loginMethod = localStorage.getItem('loginMethod') || sessionStorage.getItem('loginMethod');
+                const storage = loginMethod === 'local' ? localStorage : sessionStorage;
+                
+                const userData = storage.getItem('user');
+                if (userData) {
+                    const parsedUser = JSON.parse(userData);
+                    setUser(parsedUser);
+                    console.log('UserDashboard loaded user:', parsedUser);
+                }
+            } catch (error) {
+                console.error('Error loading user data in UserDashboard:', error);
+            }
+        };
+
+        loadUserData();
+        
         const t = setTimeout(() => setMounted(true), 0);
         return () => clearTimeout(t);
     }, []);
@@ -560,7 +580,10 @@ const UserDashboard: React.FC<UserDashboardProps> = ({ activeTab }) => {
         <div className="user-dashboard">
             {/* Schedule Pickup Modal */}
             {showSchedulePickup && (
-                <SchedulePickup onClose={() => setShowSchedulePickup(false)} />
+                <SchedulePickup 
+                    onClose={() => setShowSchedulePickup(false)} 
+                    userId={user?.id} // Pass the user ID here
+                />
             )}
 
             {/* Main Content */}
@@ -604,7 +627,22 @@ const UserDashboard: React.FC<UserDashboardProps> = ({ activeTab }) => {
                                 </div>
 
                                 <div className="booking-card-content">
-                                    
+                                    {/* User Info Display */}
+                                    {user && (
+                                        <div className="user-info-banner">
+                                            <div className="user-avatar">
+                                                {user.name?.charAt(0).toUpperCase()}
+                                            </div>
+                                            <div className="user-details">
+                                                <h4>Welcome back, {user.name}!</h4>
+                                                <p>Ready to schedule your next waste pickup?</p>
+                                            </div>
+                                            <div className="user-points">
+                                                <FaCoins className="points-icon" />
+                                                <span>{user.points || 1240} Eco Coins</span>
+                                            </div>
+                                        </div>
+                                    )}
 
                                     <div className="booking-action-section">
                                         <div
@@ -617,6 +655,11 @@ const UserDashboard: React.FC<UserDashboardProps> = ({ activeTab }) => {
                                             <div className="booking-main-content">
                                                 <h3>Schedule New Pickup</h3>
                                                 <p>Book waste collection at your preferred time and location</p>
+                                                {!user && (
+                                                    <div className="login-warning">
+                                                        <small>Please make sure you're logged in to schedule a pickup</small>
+                                                    </div>
+                                                )}
                                             </div>
                                             <FaChevronRight className="booking-arrow" />
                                         </div>

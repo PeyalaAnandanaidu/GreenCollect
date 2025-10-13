@@ -1,157 +1,246 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import './CollectorDashboard.css';
 import { 
     FaTruck, FaCheckCircle, FaMapMarkerAlt, FaClock, 
-    FaUsers, FaCalendar, FaPhone, FaEnvelope, 
-    FaSearch, FaFilter, FaCheck, FaTimes, FaEye,
-    FaExclamationTriangle, FaStar
+    FaPhone, FaEnvelope, FaSearch, FaFilter, 
+    FaCheck, FaTimes, FaExclamationTriangle, 
+    FaSpinner, FaMoneyBillWave, FaCalendar,
+    FaStar, FaEye
 } from 'react-icons/fa';
 
 interface CollectorDashboardProps {
     activeTab: string;
+    collectorId?: string;
 }
 
 interface PickupRequest {
-    id: number;
-    userId: string;
-    userName: string;
-    userPhone: string;
-    userEmail: string;
-    address: string;
-    type: string;
-    weight: string;
-    scheduledDate: string;
-    scheduledTime: string;
-    status: 'pending' | 'accepted' | 'in-progress' | 'completed' | 'cancelled';
+    _id: string;
+    userId: {
+        _id: string;
+        name: string;
+        email: string;
+        phone: string;
+    };
+    pickupAddress: string;
+    wasteType: string;
+    estimatedWeight: number;
+    pickupDate: string;
+    pickupTime: string;
+    status: 'pending' | 'accepted' | 'rejected' | 'in-progress' | 'completed' | 'cancelled';
     priority: 'low' | 'medium' | 'high';
-    specialInstructions?: string;
-    estimatedDuration: string;
+    instructions?: string;
     coinsValue: number;
     createdAt: string;
+    collectorId?: string;
 }
 
-const CollectorDashboard: React.FC<CollectorDashboardProps> = ({ activeTab }) => {
+const CollectorDashboard: React.FC<CollectorDashboardProps> = ({ activeTab, collectorId }) => {
     const [searchTerm, setSearchTerm] = useState('');
     const [statusFilter, setStatusFilter] = useState<string>('all');
     const [priorityFilter, setPriorityFilter] = useState<string>('all');
+    const [pickupRequests, setPickupRequests] = useState<PickupRequest[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState('');
+    const [stats, setStats] = useState({
+        total: 0,
+        pending: 0,
+        inProgress: 0,
+        completed: 0,
+        today: 0
+    });
 
-    const pickupRequests: PickupRequest[] = [
-        {
-            id: 1,
-            userId: 'USER001',
-            userName: 'Rajesh Kumar',
-            userPhone: '+91 9876543210',
-            userEmail: 'rajesh@example.com',
-            address: '123 MG Road, Bangalore, Karnataka - 560001',
-            type: 'Plastic',
-            weight: '5 kg',
-            scheduledDate: '2024-01-20',
-            scheduledTime: '2:00 PM - 4:00 PM',
-            status: 'pending',
-            priority: 'high',
-            specialInstructions: 'Plastic bottles and containers only',
-            estimatedDuration: '30 mins',
-            coinsValue: 50,
-            createdAt: '2024-01-19 10:30:00'
-        },
-        {
-            id: 2,
-            userId: 'USER002',
-            userName: 'Priya Singh',
-            userPhone: '+91 8765432109',
-            userEmail: 'priya@example.com',
-            address: '456 Koramangala, 3rd Block, Bangalore - 560034',
-            type: 'Paper',
-            weight: '3 kg',
-            scheduledDate: '2024-01-20',
-            scheduledTime: '10:00 AM - 12:00 PM',
-            status: 'accepted',
-            priority: 'medium',
-            specialInstructions: 'Mixed paper waste, no cardboard',
-            estimatedDuration: '20 mins',
-            coinsValue: 30,
-            createdAt: '2024-01-19 14:20:00'
-        },
-        {
-            id: 3,
-            userId: 'USER003',
-            userName: 'Amit Sharma',
-            userPhone: '+91 7654321098',
-            userEmail: 'amit@example.com',
-            address: '789 Whitefield, Bangalore - 560066',
-            type: 'Electronics',
-            weight: '2 kg',
-            scheduledDate: '2024-01-21',
-            scheduledTime: '3:00 PM - 5:00 PM',
-            status: 'in-progress',
-            priority: 'high',
-            specialInstructions: 'Old mobile phones and chargers',
-            estimatedDuration: '45 mins',
-            coinsValue: 80,
-            createdAt: '2024-01-18 09:15:00'
-        },
-        {
-            id: 4,
-            userId: 'USER004',
-            userName: 'Sneha Patel',
-            userPhone: '+91 6543210987',
-            userEmail: 'sneha@example.com',
-            address: '321 Indiranagar, Bangalore - 560038',
-            type: 'Mixed',
-            weight: '8 kg',
-            scheduledDate: '2024-01-19',
-            scheduledTime: '11:00 AM - 1:00 PM',
-            status: 'completed',
-            priority: 'low',
-            specialInstructions: 'General household waste',
-            estimatedDuration: '40 mins',
-            coinsValue: 70,
-            createdAt: '2024-01-18 16:45:00'
-        },
-        {
-            id: 5,
-            userId: 'USER005',
-            userName: 'Rahul Verma',
-            userPhone: '+91 5432109876',
-            userEmail: 'rahul@example.com',
-            address: '654 Jayanagar, Bangalore - 560041',
-            type: 'Plastic',
-            weight: '6 kg',
-            scheduledDate: '2024-01-22',
-            scheduledTime: '9:00 AM - 11:00 AM',
-            status: 'pending',
-            priority: 'medium',
-            estimatedDuration: '35 mins',
-            coinsValue: 60,
-            createdAt: '2024-01-19 18:20:00'
+    // Fetch pickup requests from API
+    useEffect(() => {
+        fetchPickupRequests();
+    }, [statusFilter]);
+
+    // Calculate stats from pickup requests
+    useEffect(() => {
+        calculateStats();
+    }, [pickupRequests]);
+
+    const fetchPickupRequests = async () => {
+        try {
+            setLoading(true);
+            setError('');
+            const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+            
+            const params = new URLSearchParams();
+            if (statusFilter && statusFilter !== 'all') {
+                params.append('status', statusFilter);
+            }
+            
+            const queryString = params.toString();
+            const url = `http://localhost:4000/api/waste-requests${queryString ? `?${queryString}` : ''}`;
+            
+            console.log('🔄 Fetching pickup requests from:', url);
+
+            const response = await fetch(url, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            console.log('📡 Response status:', response.status);
+
+            if (!response.ok) {
+                throw new Error(`Failed to fetch requests: ${response.status}`);
+            }
+
+            const data = await response.json();
+            console.log('✅ Fetched requests:', data.length);
+            setPickupRequests(data);
+        } catch (err) {
+            console.error('❌ Error fetching requests:', err);
+            setError('Failed to load pickup requests. Please try again.');
+            setPickupRequests([]);
+        } finally {
+            setLoading(false);
         }
-    ];
-
-    const handleAcceptRequest = (requestId: number) => {
-        console.log(`Accepted request: ${requestId}`);
-        // API call to update status
     };
 
-    const handleRejectRequest = (requestId: number) => {
-        console.log(`Rejected request: ${requestId}`);
-        // API call to update status
+    const calculateStats = () => {
+        const today = new Date().toISOString().split('T')[0];
+        const statsData = {
+            total: pickupRequests.length,
+            pending: pickupRequests.filter(r => r.status === 'pending').length,
+            inProgress: pickupRequests.filter(r => r.status === 'in-progress').length,
+            completed: pickupRequests.filter(r => r.status === 'completed').length,
+            today: pickupRequests.filter(r => r.pickupDate === today).length
+        };
+        setStats(statsData);
     };
 
-    const handleStartPickup = (requestId: number) => {
-        console.log(`Started pickup: ${requestId}`);
-        // API call to update status
+    const handleAcceptRequest = async (requestId: string) => {
+        try {
+            const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+            console.log('🔄 Accepting request:', requestId);
+            
+            const response = await fetch(`http://localhost:4000/api/waste-requests/${requestId}/accept`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+
+            console.log('📡 Accept response status:', response.status);
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                console.error('❌ Accept error:', errorData);
+                throw new Error(errorData.message || `HTTP ${response.status}: Failed to accept request`);
+            }
+
+            const result = await response.json();
+            console.log('✅ Accept success:', result);
+            
+            if (result.success) {
+                alert('✅ Request accepted successfully!');
+                fetchPickupRequests();
+            }
+        } catch (err: any) {
+            console.error('💥 Error accepting request:', err);
+            alert(`Failed to accept request: ${err.message}`);
+        }
     };
 
-    const handleCompletePickup = (requestId: number) => {
-        console.log(`Completed pickup: ${requestId}`);
-        // API call to update status
+    const handleRejectRequest = async (requestId: string) => {
+        try {
+            const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+            
+            const response = await fetch(`http://localhost:4000/api/waste-requests/${requestId}/reject`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'Failed to reject request');
+            }
+
+            const result = await response.json();
+            if (result.success) {
+                alert('Request rejected successfully!');
+                fetchPickupRequests();
+            }
+        } catch (err: any) {
+            console.error('Error rejecting request:', err);
+            alert(`Failed to reject request: ${err.message}`);
+        }
+    };
+
+    const handleStartPickup = async (requestId: string) => {
+        try {
+            const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+            console.log('🔄 Starting pickup for request:', requestId);
+            
+            const response = await fetch(`http://localhost:4000/api/waste-requests/${requestId}/start`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+
+            console.log('📡 Start pickup response status:', response.status);
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                console.error('❌ Start pickup error:', errorData);
+                throw new Error(errorData.message || `HTTP ${response.status}: Failed to start pickup`);
+            }
+
+            const result = await response.json();
+            console.log('✅ Start pickup success:', result);
+            
+            if (result.success) {
+                alert('🚚 Pickup started successfully!');
+                fetchPickupRequests();
+            }
+        } catch (err: any) {
+            console.error('💥 Error starting pickup:', err);
+            alert(`Failed to start pickup: ${err.message}`);
+        }
+    };
+
+    const handleCompletePickup = async (requestId: string) => {
+        try {
+            const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+            
+            const response = await fetch(`http://localhost:4000/api/waste-requests/${requestId}/complete`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'Failed to complete pickup');
+            }
+
+            const result = await response.json();
+            if (result.success) {
+                alert(`✅ Pickup completed successfully! User earned ${result.coinsEarned} coins.`);
+                fetchPickupRequests();
+            }
+        } catch (err: any) {
+            console.error('Error completing pickup:', err);
+            alert(`Failed to complete pickup: ${err.message}`);
+        }
     };
 
     const filteredRequests = pickupRequests.filter(request => {
         const matchesSearch = 
-            request.userName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            request.address.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            request.type.toLowerCase().includes(searchTerm.toLowerCase());
+            request.userId.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            request.pickupAddress.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            request.wasteType.toLowerCase().includes(searchTerm.toLowerCase());
         
         const matchesStatus = statusFilter === 'all' || request.status === statusFilter;
         const matchesPriority = priorityFilter === 'all' || request.priority === priorityFilter;
@@ -165,6 +254,7 @@ const CollectorDashboard: React.FC<CollectorDashboardProps> = ({ activeTab }) =>
             case 'accepted': return <FaCheck className="status-icon accepted" />;
             case 'in-progress': return <FaTruck className="status-icon in-progress" />;
             case 'completed': return <FaCheckCircle className="status-icon completed" />;
+            case 'rejected': return <FaTimes className="status-icon rejected" />;
             case 'cancelled': return <FaTimes className="status-icon cancelled" />;
             default: return <FaClock className="status-icon" />;
         }
@@ -176,6 +266,7 @@ const CollectorDashboard: React.FC<CollectorDashboardProps> = ({ activeTab }) =>
             case 'accepted': return 'Accepted';
             case 'in-progress': return 'In Progress';
             case 'completed': return 'Completed';
+            case 'rejected': return 'Rejected';
             case 'cancelled': return 'Cancelled';
             default: return status;
         }
@@ -199,13 +290,18 @@ const CollectorDashboard: React.FC<CollectorDashboardProps> = ({ activeTab }) =>
         }
     };
 
-    const stats = {
-        total: pickupRequests.length,
-        pending: pickupRequests.filter(r => r.status === 'pending').length,
-        inProgress: pickupRequests.filter(r => r.status === 'in-progress').length,
-        completed: pickupRequests.filter(r => r.status === 'completed').length,
-        today: pickupRequests.filter(r => r.scheduledDate === '2024-01-20').length
-    };
+    const today = new Date().toISOString().split('T')[0];
+
+    if (loading && pickupRequests.length === 0) {
+        return (
+            <div className="collector-dashboard">
+                <div className="loading-state">
+                    <FaSpinner className="spinner" />
+                    <p>Loading pickup requests...</p>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="collector-dashboard">
@@ -213,16 +309,25 @@ const CollectorDashboard: React.FC<CollectorDashboardProps> = ({ activeTab }) =>
                 <div className="page-header">
                     <h1 className="page-title">
                         {activeTab === 'overview' && 'Collector Dashboard'}
-                        {activeTab === 'requests' && 'Manage Pickup Requests'}
+                        {activeTab === 'requests' && 'Pickup Management'}
                     </h1>
                     <p className="page-subtitle">
-                        {activeTab === 'overview' && 'Manage your pickup requests and schedule'}
-                        {activeTab === 'requests' && 'View and manage all pickup requests from users'}
+                        {activeTab === 'overview' && 'Manage your pickup schedule and track performance'}
+                        {activeTab === 'requests' && 'Accept, manage, and complete pickup requests'}
                     </p>
                 </div>
 
+                {error && (
+                    <div className="error-banner">
+                        <FaTimes />
+                        <span>{error}</span>
+                        <button onClick={() => setError('')}>×</button>
+                    </div>
+                )}
+
                 {activeTab === 'overview' && (
                     <div className="collector-overview">
+                        {/* Stats Grid */}
                         <div className="stats-grid">
                             <div className="stat-card">
                                 <div className="stat-icon stat-icon-pickups">
@@ -231,7 +336,9 @@ const CollectorDashboard: React.FC<CollectorDashboardProps> = ({ activeTab }) =>
                                 <div className="stat-content">
                                     <h3>{stats.today}</h3>
                                     <p>Today's Pickups</p>
-                                    <span className="stat-trend positive">+2 from yesterday</span>
+                                    <span className="stat-trend positive">
+                                        {stats.today > 0 ? 'Active schedule' : 'No pickups today'}
+                                    </span>
                                 </div>
                             </div>
 
@@ -242,7 +349,9 @@ const CollectorDashboard: React.FC<CollectorDashboardProps> = ({ activeTab }) =>
                                 <div className="stat-content">
                                     <h3>{stats.pending}</h3>
                                     <p>Pending Requests</p>
-                                    <span className="stat-trend negative">-3 from last week</span>
+                                    <span className="stat-trend">
+                                        Awaiting your action
+                                    </span>
                                 </div>
                             </div>
 
@@ -252,40 +361,47 @@ const CollectorDashboard: React.FC<CollectorDashboardProps> = ({ activeTab }) =>
                                 </div>
                                 <div className="stat-content">
                                     <h3>{stats.completed}</h3>
-                                    <p>Completed This Week</p>
-                                    <span className="stat-trend positive">+12% growth</span>
+                                    <p>Completed</p>
+                                    <span className="stat-trend positive">
+                                        Successful pickups
+                                    </span>
                                 </div>
                             </div>
 
                             <div className="stat-card">
                                 <div className="stat-icon stat-icon-revenue">
-                                    <FaStar />
+                                    <FaMoneyBillWave />
                                 </div>
                                 <div className="stat-content">
-                                    <h3>₹2,450</h3>
-                                    <p>Weekly Earnings</p>
-                                    <span className="stat-trend positive">+8% growth</span>
+                                    <h3>{stats.total}</h3>
+                                    <p>Total Requests</p>
+                                    <span className="stat-trend">
+                                        All assignments
+                                    </span>
                                 </div>
                             </div>
                         </div>
 
+                        {/* Today's Pickup Requests */}
                         <div className="pending-requests">
                             <div className="section-header">
-                                <h3>Today's Pickup Requests</h3>
-                                <span className="badge">{stats.today} requests</span>
+                                <h3>Today's Scheduled Pickups</h3>
+                                <span className="badge">
+                                    {pickupRequests.filter(request => request.pickupDate === today).length} requests
+                                </span>
                             </div>
                             {pickupRequests
-                                .filter(request => request.scheduledDate === '2024-01-20')
-                                .slice(0, 3)
+                                .filter(request => request.pickupDate === today)
+                                .slice(0, 5)
                                 .map(request => (
-                                <div key={request.id} className="request-card">
+                                <div key={request._id} className="request-card">
                                     <div className="request-info">
                                         <FaMapMarkerAlt className="request-icon" />
                                         <div>
-                                            <h4>{request.userName}</h4>
-                                            <p>{request.address}</p>
+                                            <h4>{request.userId.name}</h4>
+                                            <p>{request.pickupAddress}</p>
                                             <span className="request-meta">
-                                                {request.type} • {request.weight} • {request.scheduledTime}
+                                                {request.wasteType} • {request.estimatedWeight} kg • {request.pickupTime}
                                             </span>
                                         </div>
                                     </div>
@@ -297,14 +413,28 @@ const CollectorDashboard: React.FC<CollectorDashboardProps> = ({ activeTab }) =>
                                         {request.status === 'pending' && (
                                             <button 
                                                 className="btn btn-success btn-sm"
-                                                onClick={() => handleAcceptRequest(request.id)}
+                                                onClick={() => handleAcceptRequest(request._id)}
                                             >
-                                                Accept
+                                                <FaCheck /> Accept
+                                            </button>
+                                        )}
+                                        {request.status === 'accepted' && (
+                                            <button 
+                                                className="btn btn-primary btn-sm"
+                                                onClick={() => handleStartPickup(request._id)}
+                                            >
+                                                <FaTruck /> Start
                                             </button>
                                         )}
                                     </div>
                                 </div>
                             ))}
+                            {pickupRequests.filter(request => request.pickupDate === today).length === 0 && (
+                                <div className="empty-state-small">
+                                    <FaTruck className="empty-icon" />
+                                    <p>No pickups scheduled for today</p>
+                                </div>
+                            )}
                         </div>
                     </div>
                 )}
@@ -317,7 +447,7 @@ const CollectorDashboard: React.FC<CollectorDashboardProps> = ({ activeTab }) =>
                                 <div className="header-stats">
                                     <div className="header-stat">
                                         <span className="stat-number">{stats.total}</span>
-                                        <span className="stat-label">Total Requests</span>
+                                        <span className="stat-label">Total</span>
                                     </div>
                                     <div className="header-stat">
                                         <span className="stat-number">{stats.pending}</span>
@@ -340,7 +470,7 @@ const CollectorDashboard: React.FC<CollectorDashboardProps> = ({ activeTab }) =>
                                     <FaSearch className="search-icon" />
                                     <input
                                         type="text"
-                                        placeholder="Search by name, address, or type..."
+                                        placeholder="Search by name, address, or waste type..."
                                         value={searchTerm}
                                         onChange={(e) => setSearchTerm(e.target.value)}
                                         className="search-input"
@@ -359,7 +489,7 @@ const CollectorDashboard: React.FC<CollectorDashboardProps> = ({ activeTab }) =>
                                             <option value="accepted">Accepted</option>
                                             <option value="in-progress">In Progress</option>
                                             <option value="completed">Completed</option>
-                                            <option value="cancelled">Cancelled</option>
+                                            <option value="rejected">Rejected</option>
                                         </select>
                                     </div>
                                     <div className="filter">
@@ -383,16 +513,25 @@ const CollectorDashboard: React.FC<CollectorDashboardProps> = ({ activeTab }) =>
                                 {filteredRequests.length === 0 ? (
                                     <div className="empty-state">
                                         <FaTruck className="empty-icon" />
-                                        <h3>No requests found</h3>
-                                        <p>No pickup requests match your search criteria</p>
+                                        <h3>No pickup requests found</h3>
+                                        <p>
+                                            {searchTerm || statusFilter !== 'all' || priorityFilter !== 'all' 
+                                                ? 'Try adjusting your search filters'
+                                                : 'No pickup requests available at the moment'
+                                            }
+                                        </p>
                                     </div>
                                 ) : (
-                                    filteredRequests.map(request => (
-                                        <div key={request.id} className="pickup-request-card">
+                                    filteredRequests.map((request, index) => (
+                                        <div 
+                                            key={request._id} 
+                                            className={`pickup-request-card status-${request.status}`}
+                                            style={{ animationDelay: `${index * 0.1}s` }}
+                                        >
                                             <div className="request-header">
                                                 <div className="user-info">
-                                                    <h3>{request.userName}</h3>
-                                                    <span className="user-id">#{request.userId}</span>
+                                                    <h3>{request.userId.name}</h3>
+                                                    <span className="user-id">ID: {request.userId._id.slice(-6)}</span>
                                                 </div>
                                                 <div className="request-meta">
                                                     <div className={`priority-badge priority-${request.priority}`}>
@@ -411,8 +550,8 @@ const CollectorDashboard: React.FC<CollectorDashboardProps> = ({ activeTab }) =>
                                                     <div className="detail-item">
                                                         <FaMapMarkerAlt className="detail-icon" />
                                                         <div>
-                                                            <span className="detail-label">Address</span>
-                                                            <span className="detail-value">{request.address}</span>
+                                                            <span className="detail-label">Pickup Address</span>
+                                                            <span className="detail-value">{request.pickupAddress}</span>
                                                         </div>
                                                     </div>
                                                     <div className="detail-item">
@@ -420,7 +559,7 @@ const CollectorDashboard: React.FC<CollectorDashboardProps> = ({ activeTab }) =>
                                                         <div>
                                                             <span className="detail-label">Schedule</span>
                                                             <span className="detail-value">
-                                                                {request.scheduledDate} • {request.scheduledTime}
+                                                                {new Date(request.pickupDate).toLocaleDateString()} • {request.pickupTime}
                                                             </span>
                                                         </div>
                                                     </div>
@@ -429,20 +568,14 @@ const CollectorDashboard: React.FC<CollectorDashboardProps> = ({ activeTab }) =>
                                                 <div className="detail-row">
                                                     <div className="detail-item">
                                                         <div className="waste-info">
-                                                            <span className="waste-type">{request.type}</span>
-                                                            <span className="waste-weight">{request.weight}</span>
-                                                        </div>
-                                                    </div>
-                                                    <div className="detail-item">
-                                                        <div className="time-info">
-                                                            <FaClock className="detail-icon" />
-                                                            <span>{request.estimatedDuration}</span>
+                                                            <span className="waste-type">{request.wasteType}</span>
+                                                            <span className="waste-weight">{request.estimatedWeight} kg</span>
                                                         </div>
                                                     </div>
                                                     <div className="detail-item">
                                                         <div className="coins-info">
-                                                            <span className="coins-label">Coins Value</span>
-                                                            <span className="coins-value">🪙 {request.coinsValue}</span>
+                                                            <span className="coins-label">Reward Value</span>
+                                                            <span className="coins-value">🪙 {request.coinsValue} coins</span>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -450,18 +583,18 @@ const CollectorDashboard: React.FC<CollectorDashboardProps> = ({ activeTab }) =>
                                                 <div className="detail-row">
                                                     <div className="detail-item">
                                                         <FaPhone className="detail-icon" />
-                                                        <span>{request.userPhone}</span>
+                                                        <span>{request.userId.phone || 'Not provided'}</span>
                                                     </div>
                                                     <div className="detail-item">
                                                         <FaEnvelope className="detail-icon" />
-                                                        <span>{request.userEmail}</span>
+                                                        <span>{request.userId.email}</span>
                                                     </div>
                                                 </div>
 
-                                                {request.specialInstructions && (
+                                                {request.instructions && request.instructions !== 'None' && (
                                                     <div className="special-instructions">
                                                         <strong>Special Instructions:</strong>
-                                                        <p>{request.specialInstructions}</p>
+                                                        <p>{request.instructions}</p>
                                                     </div>
                                                 )}
                                             </div>
@@ -471,13 +604,13 @@ const CollectorDashboard: React.FC<CollectorDashboardProps> = ({ activeTab }) =>
                                                     <>
                                                         <button 
                                                             className="btn btn-success"
-                                                            onClick={() => handleAcceptRequest(request.id)}
+                                                            onClick={() => handleAcceptRequest(request._id)}
                                                         >
                                                             <FaCheck /> Accept Request
                                                         </button>
                                                         <button 
                                                             className="btn btn-danger"
-                                                            onClick={() => handleRejectRequest(request.id)}
+                                                            onClick={() => handleRejectRequest(request._id)}
                                                         >
                                                             <FaTimes /> Reject
                                                         </button>
@@ -486,7 +619,7 @@ const CollectorDashboard: React.FC<CollectorDashboardProps> = ({ activeTab }) =>
                                                 {request.status === 'accepted' && (
                                                     <button 
                                                         className="btn btn-primary"
-                                                        onClick={() => handleStartPickup(request.id)}
+                                                        onClick={() => handleStartPickup(request._id)}
                                                     >
                                                         <FaTruck /> Start Pickup
                                                     </button>
@@ -494,7 +627,7 @@ const CollectorDashboard: React.FC<CollectorDashboardProps> = ({ activeTab }) =>
                                                 {request.status === 'in-progress' && (
                                                     <button 
                                                         className="btn btn-success"
-                                                        onClick={() => handleCompletePickup(request.id)}
+                                                        onClick={() => handleCompletePickup(request._id)}
                                                     >
                                                         <FaCheckCircle /> Complete Pickup
                                                     </button>
@@ -511,7 +644,7 @@ const CollectorDashboard: React.FC<CollectorDashboardProps> = ({ activeTab }) =>
 
                                             <div className="request-footer">
                                                 <span className="created-at">
-                                                    Request created: {request.createdAt}
+                                                    Request created: {new Date(request.createdAt).toLocaleString()}
                                                 </span>
                                             </div>
                                         </div>
