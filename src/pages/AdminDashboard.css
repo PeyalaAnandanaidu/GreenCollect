@@ -2,6 +2,9 @@
     padding: 20px;
     background-color: #f8f9fa;
     min-height: 100vh;
+    /* allow overflow so layout can span full width without clipping */
+    overflow-x: visible;
+    box-sizing: border-box;
 }
 
 .admin-overview {
@@ -137,12 +140,12 @@
 }
 
 .stat-item {
-    background: white;
+    background: rgb(0, 0, 0);
     padding: 25px;
     border-radius: 12px;
     text-align: center;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-    border: 1px solid #e0e0e0;
+    box-shadow: 0 2px 10px rgba(64, 67, 31, 0.699);
+    border: 1px solid #f0ed56;
     transition: transform 0.3s ease;
 }
 
@@ -207,8 +210,12 @@
 
 .requests-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(450px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
     gap: 25px;
+    width: 100%;
+
+    /* keep all cards aligned at the top of each grid row */
+    align-items: start;
 }
 
 .request-card {
@@ -219,7 +226,43 @@
     background: white;
     position: relative;
     overflow: hidden;
+
+    /* make card a column flex container so we can push actions to bottom */
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
 }
+
+/* Partner Form Modal */
+.partner-form-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,0.85);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+    padding: 20px;
+}
+
+.partner-form {
+    background: #000000;
+    border-radius: 12px;
+    padding: 24px;
+    width: 100%;
+    max-width: 760px;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.6);
+}
+
+.partner-form .form-header h3 { color: #fff; }
+.partner-form .form-group label { color: #ddd; }
+.partner-form input, .partner-form textarea, .partner-form select { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.06); color: #fff; }
+.partner-form .form-actions { border-top: 1px solid rgba(255,255,255,0.04); padding-top: 16px; }
 
 .request-card::before {
     content: '';
@@ -357,6 +400,9 @@
     margin-top: 20px;
     padding-top: 20px;
     border-top: 2px solid #f0f0f0;
+
+    /* keep actions anchored at the bottom of the card */
+    margin-top: auto;
 }
 
 .empty-state {
@@ -824,8 +870,14 @@
 }
 
 .main-content {
-    max-width: 1200px;
-    margin: 0 auto;
+    /* make content span the full viewport width */
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+    padding-left: 24px;
+    padding-right: 24px;
+    box-sizing: border-box;
+    overflow-x: visible;
 }
 
 /* Page header */
@@ -945,8 +997,9 @@
 /* Overview sections */
 .overview-content {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
     gap: 24px;
+    width: 100%;
 }
 
 .overview-section {

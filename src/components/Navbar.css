@@ -471,6 +471,25 @@
   background: linear-gradient(135deg, #000000 0%, #333333 100%);
 }
 
+.mobile-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.mobile-brand-link {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: #ffcc00;
+  text-decoration: none;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.mobile-brand-link:hover {
+  color: #ffffff;
+}
+
 .mobile-menu-brand {
   display: flex;
   align-items: center;

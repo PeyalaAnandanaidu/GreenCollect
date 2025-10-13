@@ -460,26 +460,8 @@ const Navbar: React.FC<NavbarProps> = ({
       {shouldShowLoggedInUI && (
         <div className={`mobile-menu ${menuOpen ? 'menu-open' : ''}`}>
           <div className="mobile-menu-header">
-            <div className="mobile-user-info">
-              <div className="mobile-user-avatar">
-                {avatarUrl ? (
-                  <img src={avatarUrl} alt="Profile" className="mobile-avatar-img" />
-                ) : (
-                  <FaUserCircle className="mobile-avatar-icon" />
-                )}
-              </div>
-              <div className="mobile-user-details">
-                <span className="mobile-user-name">{getUserDisplayName()}</span>
-                <span className="mobile-user-email">{getUserDisplayEmail()}</span>
-                <span className={`mobile-user-role ${role}`}>
-                  {role === 'collector' 
-                    ? user?.collectorInfo?.isApproved 
-                      ? 'Approved Collector' 
-                      : 'Pending Collector'
-                    : role.charAt(0).toUpperCase() + role.slice(1)
-                  }
-                </span>
-              </div>
+            <div className="mobile-brand">
+              <Link to="/" className="mobile-brand-link">Janatha Garage</Link>
             </div>
           </div>
 
