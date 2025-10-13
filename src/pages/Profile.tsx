@@ -163,13 +163,7 @@ const Profile = ({
             )}
           </div>
           <div className="user-stats">
-            <div className="points-tile">
-              <FaCoins className="coins-icon" />
-              <div>
-                <div className="points-value">{user.points || 0}</div>
-                <div className="points-label">Points</div>
-              </div>
-            </div>
+           
             <button className="edit-btn" onClick={handleLogout}>
               <FaShieldAlt /> Logout
             </button>

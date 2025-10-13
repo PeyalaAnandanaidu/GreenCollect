@@ -122,6 +122,41 @@ const Navbar: React.FC<NavbarProps> = ({
     loadUserData();
   }, [location.pathname]);
 
+  // Refresh user data when coins might have changed (after pickup completion)
+  useEffect(() => {
+    const refreshUserData = async () => {
+      try {
+        const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+        if (!token || !user) return;
+
+        // Fetch updated user data to get latest coins
+        const response = await fetch('http://localhost:4000/api/auth/me', {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          },
+        });
+
+        if (response.ok) {
+          const userData = await response.json();
+          if (userData.success && userData.user) {
+            setUser(userData.user);
+            // Update storage as well
+            const loginMethod = localStorage.getItem('loginMethod') || sessionStorage.getItem('loginMethod');
+            const storage = loginMethod === 'local' ? localStorage : sessionStorage;
+            storage.setItem('user', JSON.stringify(userData.user));
+          }
+        }
+      } catch (error) {
+        console.error('Error refreshing user data:', error);
+      }
+    };
+
+    // Refresh when on dashboard or status page where coins might change
+    if (location.pathname === '/dashboard' || location.pathname === '/status') {
+      refreshUserData();
+    }
+  }, [location.pathname, user]);
+
   const handleLogout = () => {
     setUser(null);
     setAvatarUrl(null);
@@ -178,19 +213,19 @@ const Navbar: React.FC<NavbarProps> = ({
   const notifications = [
     {
       id: 1,
-      message: 'Your service request has been confirmed',
+      message: 'Your pickup request has been confirmed',
       time: '5 min ago',
       read: false,
     },
     {
       id: 2,
-      message: 'Your vehicle is ready for pickup',
+      message: 'Collector is on the way to pickup your waste',
       time: '1 hour ago',
       read: false,
     },
     {
       id: 3,
-      message: 'New service packages available',
+      message: 'You earned 150 coins from your last pickup!',
       time: '2 hours ago',
       read: true,
     },
@@ -236,10 +271,12 @@ const Navbar: React.FC<NavbarProps> = ({
     return `${role}@janathagarage.com`;
   };
 
-  // Get user points/coins
+  // Get user points/coins - NEW USERS START WITH 0
   const getUserPoints = () => {
-    if (user?.points !== undefined) return user.points;
-    return role === 'user' ? 250 : 0;
+    if (user?.points !== undefined && user?.points !== null) {
+      return user.points;
+    }
+    return 0; // All new users start with 0 coins
   };
 
   return (
@@ -297,7 +334,7 @@ const Navbar: React.FC<NavbarProps> = ({
                 >
                   <FaCoins className="coins-icon" />
                   <span className="coins-amount">{getUserPoints()}</span>
-                  <span className="coins-label">Points</span>
+                  <span className="coins-label">Coins</span>
                 </div>
               )}
 
@@ -409,6 +446,12 @@ const Navbar: React.FC<NavbarProps> = ({
                             : role.charAt(0).toUpperCase() + role.slice(1)
                           }
                         </span>
+                        {role === 'user' && (
+                          <span className="user-coins">
+                            <FaCoins className="coins-icon-small" />
+                            {getUserPoints()} Coins
+                          </span>
+                        )}
                       </div>
                     </div>
                     <button
@@ -434,7 +477,7 @@ const Navbar: React.FC<NavbarProps> = ({
                         }}
                       >
                         <FaCoins className="dropdown-item-icon" />
-                        My Rewards
+                        My Rewards ({getUserPoints()} coins)
                       </button>
                     )}
                     <div className="dropdown-divider"></div>
@@ -483,7 +526,7 @@ const Navbar: React.FC<NavbarProps> = ({
                   onClick={handleBookService}
                 >
                   <FaCalendar className="mobile-menu-item-icon" />
-                  <span>Book Service</span>
+                  <span>Schedule Pickup</span>
                 </button>
 
                 <button
@@ -499,7 +542,7 @@ const Navbar: React.FC<NavbarProps> = ({
                   onClick={handleEcoStore}
                 >
                   <FaCartArrowDown className="mobile-menu-item-icon" />
-                  <span>Eco Store</span>
+                  <span>Eco Store ({getUserPoints()} coins)</span>
                 </button>
               </>
             )}
@@ -515,7 +558,7 @@ const Navbar: React.FC<NavbarProps> = ({
                 }}
               >
                 <FaTruck className="mobile-menu-item-icon" />
-                <span>Service Requests</span>
+                <span>Pickup Requests</span>
               </button>
             )}
 

@@ -88,6 +88,65 @@ router.get('/', authMiddleware, requireRole(['collector', 'admin']), async (req,
   }
 });
 
+// @route   GET /api/waste-requests/my-requests
+// @desc    Get current user's waste requests
+// @access  Private
+router.get('/my-requests', authMiddleware, async (req, res) => {
+  try {
+    const userId = req.user.id;
+    
+    console.log('🔧 Fetching requests for user:', userId);
+
+    const userRequests = await WasteRequest.find({ user: userId })
+      .populate('user', 'name email phone')
+      .populate('assignedCollector', 'name email')
+      .sort({ createdAt: -1 });
+
+    console.log(`✅ Found ${userRequests.length} requests for user ${userId}`);
+
+    // Format the response to match frontend expectations
+    const formattedRequests = userRequests.map(request => ({
+      _id: request._id,
+      userId: {
+        _id: request.user._id,
+        name: request.user.name,
+        email: request.user.email,
+        phone: request.user.phone || 'Not provided'
+      },
+      pickupAddress: request.pickupAddress,
+      wasteType: request.wasteType,
+      estimatedWeight: request.estimatedWeight,
+      pickupDate: request.pickupDate.toISOString().split('T')[0],
+      pickupTime: request.pickupTime,
+      status: request.collectorStatus,
+      priority: request.priority || 'medium',
+      instructions: request.instructions,
+      coinsValue: calculateCoinsValue(request.estimatedWeight, request.wasteType),
+      createdAt: request.createdAt,
+      collectorId: request.assignedCollector?._id,
+      assignedCollector: request.assignedCollector ? {
+        _id: request.assignedCollector._id,
+        name: request.assignedCollector.name,
+        email: request.assignedCollector.email
+      } : undefined
+    }));
+
+    res.status(200).json({
+      success: true,
+      count: formattedRequests.length,
+      requests: formattedRequests
+    });
+
+  } catch (error) {
+    console.error('❌ Error fetching user requests:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Server error while fetching requests',
+      error: error.message 
+    });
+  }
+});
+
 // @route   POST /api/waste-requests
 // @desc    Create a new waste pickup request
 // @access  Private
@@ -105,10 +164,20 @@ router.post('/', authMiddleware, async (req, res) => {
 
     const userId = req.user.id;
 
+    // Validation
     if (!pickupDate || !pickupTime || !wasteType || !estimatedWeight || !pickupAddress) {
       return res.status(400).json({ 
         success: false, 
         message: 'All required fields must be filled' 
+      });
+    }
+
+    // Validate weight is a positive number
+    const weight = parseFloat(estimatedWeight);
+    if (isNaN(weight) || weight <= 0) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Estimated weight must be a positive number' 
       });
     }
 
@@ -125,7 +194,7 @@ router.post('/', authMiddleware, async (req, res) => {
       pickupDate: new Date(pickupDate),
       pickupTime,
       wasteType,
-      estimatedWeight: parseFloat(estimatedWeight),
+      estimatedWeight: weight,
       pickupAddress,
       contactNumber: contactNumber || 'Not provided',
       instructions: instructions || 'None',
@@ -135,10 +204,10 @@ router.post('/', authMiddleware, async (req, res) => {
 
     const savedRequest = await newRequest.save();
 
+    // Add to user's wasteRequests array
     if (!user.wasteRequests) {
       user.wasteRequests = [];
     }
-
     user.wasteRequests.push(savedRequest._id);
     await user.save();
 
@@ -158,7 +227,8 @@ router.post('/', authMiddleware, async (req, res) => {
         instructions: savedRequest.instructions,
         status: savedRequest.collectorStatus,
         userName: savedRequest.user.name,
-        userEmail: savedRequest.user.email
+        userEmail: savedRequest.user.email,
+        coinsValue: calculateCoinsValue(savedRequest.estimatedWeight, savedRequest.wasteType)
       }
     });
 
@@ -208,7 +278,7 @@ router.put('/:requestId/accept', authMiddleware, requireRole(['collector']), asy
       });
     }
 
-    // CORRECT: Set collectionStatus to 'not_collected' for start pickup to work
+    // Update request status
     request.collectorStatus = 'accepted';
     request.assignedCollector = collectorId;
     request.collectionStatus = 'not_collected';
@@ -227,6 +297,7 @@ router.put('/:requestId/accept', authMiddleware, requireRole(['collector']), asy
       assignedCollectorId: updatedRequest.assignedCollector?._id?.toString()
     });
 
+    // Log collector activity
     await CollectorActivity.create({
       collectorId,
       wasteRequestId: requestId,
@@ -243,7 +314,8 @@ router.put('/:requestId/accept', authMiddleware, requireRole(['collector']), asy
     console.error('❌ Error accepting request:', error);
     res.status(500).json({ 
       success: false, 
-      message: 'Server error' 
+      message: 'Server error while accepting request',
+      error: error.message 
     });
   }
 });
@@ -254,6 +326,7 @@ router.put('/:requestId/accept', authMiddleware, requireRole(['collector']), asy
 router.put('/:requestId/reject', authMiddleware, requireRole(['collector']), async (req, res) => {
   try {
     const { requestId } = req.params;
+    const collectorId = req.user.id;
 
     const request = await WasteRequest.findById(requestId);
     if (!request) {
@@ -275,6 +348,13 @@ router.put('/:requestId/reject', authMiddleware, requireRole(['collector']), asy
 
     await updatedRequest.populate('user', 'name email phone');
 
+    // Log collector activity
+    await CollectorActivity.create({
+      collectorId,
+      wasteRequestId: requestId,
+      status: 'rejected'
+    });
+
     res.status(200).json({
       success: true,
       message: 'Waste request rejected successfully',
@@ -285,7 +365,8 @@ router.put('/:requestId/reject', authMiddleware, requireRole(['collector']), asy
     console.error('Error rejecting request:', error);
     res.status(500).json({ 
       success: false, 
-      message: 'Server error' 
+      message: 'Server error while rejecting request',
+      error: error.message 
     });
   }
 });
@@ -320,12 +401,10 @@ router.put('/:requestId/start', authMiddleware, requireRole(['collector']), asyn
       collectionStatus: request.collectionStatus,
       assignedCollector: request.assignedCollector,
       assignedCollectorId: request.assignedCollector?._id?.toString(),
-      assignedCollectorType: typeof request.assignedCollector,
-      currentUser: collectorId,
-      currentUserType: typeof collectorId
+      currentUser: collectorId
     });
 
-    // Check if this collector owns the request - FIXED COMPARISON
+    // Check if this collector owns the request
     if (!request.assignedCollector) {
       console.log('❌ No collector assigned to this request');
       return res.status(403).json({ 
@@ -371,6 +450,7 @@ router.put('/:requestId/start', authMiddleware, requireRole(['collector']), asyn
     const updatedRequest = await request.save();
     console.log('✅ Pickup started successfully');
 
+    // Log collector activity
     await CollectorActivity.create({
       collectorId,
       wasteRequestId: requestId,
@@ -400,10 +480,7 @@ router.put('/:requestId/start', authMiddleware, requireRole(['collector']), asyn
 });
 
 // @route   PUT /api/waste-requests/:requestId/complete
-// @desc    Collector completes a pickup
-// @access  Private (Collectors only)
-// @route   PUT /api/waste-requests/:requestId/complete
-// @desc    Collector completes a pickup
+// @desc    Collector completes a pickup and awards coins to user
 // @access  Private (Collectors only)
 router.put('/:requestId/complete', authMiddleware, requireRole(['collector']), async (req, res) => {
   try {
@@ -442,36 +519,54 @@ router.put('/:requestId/complete', authMiddleware, requireRole(['collector']), a
       });
     }
 
+    // Calculate coins based on weight and waste type
+    const coinsEarned = calculateCoinsValue(request.estimatedWeight, request.wasteType);
+
     // Update request status
     request.collectorStatus = 'completed';
     request.collectionStatus = 'collected';
     request.collectedAt = new Date();
+    request.coinsAwarded = coinsEarned; // Store how many coins were awarded
     
     const updatedRequest = await request.save();
 
+    // Log collector activity
     await CollectorActivity.create({
       collectorId,
       wasteRequestId: requestId,
       status: 'completed'
     });
 
-    // FIX: Update user points without triggering full user validation
+    // Award coins to user
     const user = await User.findById(request.user);
     if (user) {
-      const coinsEarned = calculateCoinsValue(request.estimatedWeight, request.wasteType);
+      // Ensure points field exists and add the earned coins
       user.points = (user.points || 0) + coinsEarned;
       
+      // Add to user's completed pickups
+      if (!user.completedPickups) {
+        user.completedPickups = [];
+      }
+      user.completedPickups.push({
+        requestId: request._id,
+        completedAt: new Date(),
+        coinsEarned: coinsEarned,
+        wasteType: request.wasteType,
+        weight: request.estimatedWeight
+      });
+
       // Save without validation to avoid collectorInfo validation errors
       await user.save({ validateBeforeSave: false });
       
       console.log(`✅ Awarded ${coinsEarned} coins to user: ${user.name}`);
+      console.log(`💰 User ${user.name} now has ${user.points} total coins`);
     }
 
     res.status(200).json({
       success: true,
       message: 'Pickup completed successfully',
       request: updatedRequest,
-      coinsEarned: calculateCoinsValue(request.estimatedWeight, request.wasteType)
+      coinsEarned: coinsEarned
     });
 
   } catch (error) {
@@ -479,6 +574,131 @@ router.put('/:requestId/complete', authMiddleware, requireRole(['collector']), a
     res.status(500).json({ 
       success: false, 
       message: 'Server error while completing pickup',
+      error: error.message 
+    });
+  }
+});
+
+// @route   PUT /api/waste-requests/:requestId/cancel
+// @desc    User cancels their own pickup request
+// @access  Private
+router.put('/:requestId/cancel', authMiddleware, async (req, res) => {
+  try {
+    const { requestId } = req.params;
+    const userId = req.user.id;
+
+    const request = await WasteRequest.findById(requestId);
+    if (!request) {
+      return res.status(404).json({ 
+        success: false, 
+        message: 'Waste request not found' 
+      });
+    }
+
+    // Check if user owns this request
+    if (request.user.toString() !== userId) {
+      return res.status(403).json({ 
+        success: false, 
+        message: 'Not authorized to cancel this request' 
+      });
+    }
+
+    // Only allow cancellation if request is still pending
+    if (request.collectorStatus !== 'pending') {
+      return res.status(400).json({ 
+        success: false, 
+        message: `Cannot cancel request - request is already ${request.collectorStatus}` 
+      });
+    }
+
+    request.collectorStatus = 'cancelled';
+    const updatedRequest = await request.save();
+
+    res.status(200).json({
+      success: true,
+      message: 'Pickup request cancelled successfully',
+      request: updatedRequest
+    });
+
+  } catch (error) {
+    console.error('Error cancelling request:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Server error while cancelling request',
+      error: error.message 
+    });
+  }
+});
+
+// @route   GET /api/waste-requests/user/:userId
+// @desc    Get waste requests for a specific user
+// @access  Private
+router.get('/user/:userId', authMiddleware, async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const currentUserId = req.user.id;
+    const currentUserRole = req.user.role;
+
+    console.log('🔧 Fetching user requests:', {
+      requestedUserId: userId,
+      currentUserId: currentUserId,
+      currentUserRole: currentUserRole
+    });
+
+    // Check if user is accessing their own data or is admin/collector
+    if (currentUserId !== userId && currentUserRole !== 'admin' && currentUserRole !== 'collector') {
+      console.log('❌ Access denied - user not authorized');
+      return res.status(403).json({ 
+        success: false, 
+        message: 'Access denied. You can only view your own requests.' 
+      });
+    }
+
+    const userRequests = await WasteRequest.find({ user: userId })
+      .populate('user', 'name email phone')
+      .populate('assignedCollector', 'name email')
+      .sort({ createdAt: -1 });
+
+    console.log(`✅ Found ${userRequests.length} requests for user ${userId}`);
+
+    // Format the response to match frontend expectations
+    const formattedRequests = userRequests.map(request => ({
+      _id: request._id,
+      userId: {
+        _id: request.user._id,
+        name: request.user.name,
+        email: request.user.email,
+        phone: request.user.phone || 'Not provided'
+      },
+      pickupAddress: request.pickupAddress,
+      wasteType: request.wasteType,
+      estimatedWeight: request.estimatedWeight,
+      pickupDate: request.pickupDate.toISOString().split('T')[0],
+      pickupTime: request.pickupTime,
+      status: request.collectorStatus,
+      priority: request.priority || 'medium',
+      instructions: request.instructions,
+      coinsValue: calculateCoinsValue(request.estimatedWeight, request.wasteType),
+      createdAt: request.createdAt,
+      collectorId: request.assignedCollector?._id,
+      assignedCollector: request.assignedCollector ? {
+        _id: request.assignedCollector._id,
+        name: request.assignedCollector.name,
+        email: request.assignedCollector.email
+      } : undefined
+    }));
+
+    res.status(200).json({
+      success: true,
+      count: formattedRequests.length,
+      requests: formattedRequests
+    });
+
+  } catch (error) {
+    console.error('❌ Error fetching user requests:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Server error while fetching user requests',
       error: error.message 
     });
   }
@@ -535,7 +755,8 @@ router.get('/collector/stats', authMiddleware, requireRole(['collector']), async
     console.error('Error getting collector stats:', error);
     res.status(500).json({ 
       success: false, 
-      message: 'Server error' 
+      message: 'Server error while fetching collector stats',
+      error: error.message 
     });
   }
 });
