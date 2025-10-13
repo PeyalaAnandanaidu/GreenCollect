@@ -45,35 +45,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ activeTab }) => {
         { id: 4, name: 'Meera Reddy', completedPickups: 29, rating: 4.6 }
     ]);
 
-    const [recycledPartners, setRecycledPartners] = useState<RecycledPartner[]>([
-        {
-            id: 1,
-            name: 'GreenTech Recyclers',
-            type: 'Plastic Recycling',
-            location: 'Bangalore',
-            contact: 'contact@greentech.com',
-            wasteProcessed: '120 tons',
-            rating: 4.8
-        },
-        {
-            id: 2,
-            name: 'EcoPaper Solutions',
-            type: 'Paper Recycling',
-            location: 'Mumbai',
-            contact: 'info@ecopaper.com',
-            wasteProcessed: '85 tons',
-            rating: 4.6
-        },
-        {
-            id: 3,
-            name: 'MetalRevive Inc',
-            type: 'Metal Recycling',
-            location: 'Delhi',
-            contact: 'support@metalrevive.com',
-            wasteProcessed: '200 tons',
-            rating: 4.9
-        }
-    ]);
+    const [recycledPartners, setRecycledPartners] = useState<RecycledPartner[]>([]);
 
     const [showAddPartner, setShowAddPartner] = useState(false);
     const [partnerForm, setPartnerForm] = useState({
@@ -91,22 +63,56 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ activeTab }) => {
         setShowAddPartner(true);
     };
 
-    const handleAddPartnerSubmit = (e: React.FormEvent) => {
+    const handleAddPartnerSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        const newPartner: RecycledPartner = {
-            id: Date.now(),
-            name: partnerForm.name,
+    
+        const newPartner = {
+            companyName: partnerForm.name,
+            establishingYear: partnerForm.establishingYear,
             type: partnerForm.type,
             location: partnerForm.location,
             contact: partnerForm.contact,
-            wasteProcessed: partnerForm.wasteProcessed || '0 tons',
-            rating: partnerForm.rating || 0,
-            establishingYear: partnerForm.establishingYear
+            wasteProcessed: partnerForm.wasteProcessed,
+            rating: partnerForm.rating
         };
-        setRecycledPartners(prev => [newPartner, ...prev]);
-        setShowAddPartner(false);
+    
+        try {
+            const response = await fetch('http://localhost:4000/api/partners', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(newPartner)
+            });
+    
+            if (!response.ok) throw new Error('Failed to add partner');
+    
+            const data = await response.json();
+            setRecycledPartners(prev => [data.company, ...prev]);
+            setShowAddPartner(false);
+        } catch (error) {
+            console.error('Error adding partner:', error);
+            alert('Failed to add partner');
+        }
     };
-
+    
+    useEffect(() => {
+        if (activeTab === 'partners') {
+            fetchPartners();
+        }
+    }, [activeTab]);
+    
+    const fetchPartners = async () => {
+        try {
+            const response = await fetch('http://localhost:4000/api/partners');
+            if (!response.ok) throw new Error('Failed to fetch partners');
+            const data = await response.json();
+            setRecycledPartners(data.companies);
+        } catch (error) {
+            console.error('Error fetching partners:', error);
+        }
+    };
+    
     // Fetch collector requests from backend
     const fetchCollectorRequests = async () => {
         try {
@@ -441,11 +447,11 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ activeTab }) => {
                                                             <span>{request.address}</span>
                                                         </div>
                                                         <div className="detail-row">
-                                                            <strong>Vehicle:</strong>
+                                                            <strong className='side-heading'>Vehicle:</strong>
                                                             <span>{request.vehicleType} ({request.vehicleNumber})</span>
                                                         </div>
                                                         <div className="detail-row">
-                                                            <strong>Experience:</strong>
+                                                            <strong className='side-heading'>Experience:</strong>
                                                             <span>{request.experience}</span>
                                                         </div>
                                                     </div>
@@ -491,7 +497,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ activeTab }) => {
                                                             <span>{request.phone}</span>
                                                         </div>
                                                         <div className="detail-row">
-                                                            <strong>Vehicle:</strong>
+                                                            <strong className='side-heading'>Vehicle:</strong>
                                                             <span>{request.vehicleType} ({request.vehicleNumber})</span>
                                                         </div>
                                                     </div>
@@ -558,15 +564,15 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ activeTab }) => {
                                         </div>
                                         <div className="partner-details">
                                             <div className="detail">
-                                                <strong>Location:</strong>
+                                                <strong style={{ color: 'white'}}>Location:</strong>
                                                 <span>{partner.location}</span>
                                             </div>
                                             <div className="detail">
-                                                <strong>Contact:</strong>
+                                                <strong style={{ color: 'white'}}>Contact:</strong>
                                                 <span>{partner.contact}</span>
                                             </div>
                                             <div className="detail">
-                                                <strong>Waste Processed:</strong>
+                                                <strong style={{ color: 'white'}}>Waste Processed:</strong>
                                                 <span className="waste-amount">{partner.wasteProcessed}</span>
                                             </div>
                                         </div>

@@ -5,6 +5,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const http = require('http');
 const { Server } = require('socket.io');
+const companyRoutes = require('./routes/companyRoutes');
 
 const app = express();
 const httpServer = http.createServer(app);
@@ -54,6 +55,7 @@ app.use('/api/users', userRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/waste-requests', wasteRequestRoutes); // Add waste requests routes
+app.use('/api', companyRoutes);
 
 // Protected example route
 app.get('/api/protected', authMiddleware, (req, res) => {

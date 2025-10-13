@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState,useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import './SustainableProducts.css';
 import {
@@ -15,7 +15,7 @@ import {
 } from 'react-icons/fa';
 
 interface Product {
-    id: number;
+    id: string;
     name: string;
     description: string;
     price: number;
@@ -34,156 +34,49 @@ const SustainableProducts: React.FC = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [categoryFilter, setCategoryFilter] = useState('all');
     const [userCoins] = useState(1250);
-    const [wishlist, setWishlist] = useState<number[]>([]);
+    const [wishlist, setWishlist] = useState<String[]>([]);
 
-    const products: Product[] = [
-        {
-            id: 1,
-            name: 'Premium Bamboo Toothbrush Set - 4 Pack',
-            description: 'Eco-friendly bamboo toothbrushes with biodegradable charcoal bristles. Perfect for zero-waste bathroom routine and sustainable oral care.',
-            price: 50,
-            originalPrice: 70,
-            category: 'Personal Care',
-            image: 'https://images.unsplash.com/photo-1584305574647-0cc949a2bfbd?w=600&h=400&fit=crop',
-            rating: 4.5,
-            ecoRating: 5,
-            tags: ['biodegradable', 'zero-waste', 'bamboo', 'charcoal'],
-            inStock: true,
-            fastDelivery: true,
-            reviews: 128
-        },
-        {
-            id: 2,
-            name: 'Insulated Stainless Steel Coffee Cup',
-            description: 'Double-walled insulated stainless steel coffee cup with leak-proof silicone lid. Keep your drinks hot for 6 hours or cold for 12 hours.',
-            price: 120,
-            originalPrice: 150,
-            category: 'Kitchen',
-            image: 'https://images.unsplash.com/photo-1570197788417-0e82375c9371?w=600&h=400&fit=crop',
-            rating: 4.8,
-            ecoRating: 4,
-            tags: ['reusable', 'insulated', 'BPA-free', 'stainless-steel'],
-            inStock: true,
-            fastDelivery: true,
-            reviews: 256
-        },
-        {
-            id: 3,
-            name: 'Organic Cotton Canvas Tote Bag',
-            description: 'Extra large capacity tote bag made from 100% organic cotton canvas. Water-resistant and perfect for grocery shopping or beach trips.',
-            price: 80,
-            category: 'Fashion',
-            image: 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=600&h=400&fit=crop',
-            rating: 4.3,
-            ecoRating: 5,
-            tags: ['organic', 'reusable', 'cotton', 'canvas'],
-            inStock: true,
-            fastDelivery: false,
-            reviews: 89
-        },
-        {
-            id: 4,
-            name: 'Portable Solar Power Bank Charger',
-            description: 'High-efficiency solar charger with 20,000mAh capacity. Fast charging for all devices with built-in LED flashlight and waterproof design.',
-            price: 200,
-            originalPrice: 250,
-            category: 'Electronics',
-            image: 'https://images.unsplash.com/photo-1609592810793-abeb6c64b5c6?w=600&h=400&fit=crop',
-            rating: 4.6,
-            ecoRating: 5,
-            tags: ['solar', 'renewable', 'portable', 'power-bank'],
-            inStock: true,
-            fastDelivery: true,
-            reviews: 342
-        },
-        {
-            id: 5,
-            name: 'Natural Beeswax Food Wrap Set',
-            description: 'Reusable food wraps made from organic cotton, beeswax, and tree resin. Perfect alternative to plastic wrap for sustainable food storage.',
-            price: 60,
-            category: 'Kitchen',
-            image: 'https://images.unsplash.com/photo-1570194065650-2f4c1f306bcc?w=600&h=400&fit=crop',
-            rating: 4.4,
-            ecoRating: 5,
-            tags: ['reusable', 'beeswax', 'food-safe', 'plastic-free'],
-            inStock: true,
-            fastDelivery: true,
-            reviews: 167
-        },
-        {
-            id: 6,
-            name: 'Natural Shampoo & Conditioner Bars',
-            description: 'Zero-waste shampoo and conditioner bars with argan oil and lavender. Lasts 2-3 times longer than traditional liquid shampoo.',
-            price: 45,
-            originalPrice: 60,
-            category: 'Personal Care',
-            image: 'https://images.unsplash.com/photo-1594736797933-d0ea3ff8db41?w=600&h=400&fit=crop',
-            rating: 4.7,
-            ecoRating: 5,
-            tags: ['zero-waste', 'natural', 'plastic-free', 'vegan'],
-            inStock: true,
-            fastDelivery: false,
-            reviews: 203
-        },
-        {
-            id: 7,
-            name: 'Stainless Steel Straw Kit with Case',
-            description: 'Complete reusable straw kit with 4 stainless steel straws, cleaning brushes, and carrying case. Say no to single-use plastic straws.',
-            price: 35,
-            category: 'Kitchen',
-            image: 'https://images.unsplash.com/photo-1589363460777-cb6f6d5d7f20?w=600&h=400&fit=crop',
-            rating: 4.2,
-            ecoRating: 4,
-            tags: ['reusable', 'stainless-steel', 'plastic-free', 'travel'],
-            inStock: true,
-            fastDelivery: true,
-            reviews: 94
-        },
-        {
-            id: 8,
-            name: 'Sustainable Hemp Backpack - Large',
-            description: 'Durable and spacious backpack made from sustainable hemp fiber. Multiple compartments and laptop sleeve included.',
-            price: 150,
-            originalPrice: 180,
-            category: 'Fashion',
-            image: 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=600&h=400&fit=crop',
-            rating: 4.5,
-            ecoRating: 5,
-            tags: ['hemp', 'sustainable', 'durable', 'laptop-friendly'],
-            inStock: true,
-            fastDelivery: true,
-            reviews: 178
-        },
-        {
-            id: 9,
-            name: 'Glass Food Storage Container Set',
-            description: '12-piece borosilicate glass food storage containers with bamboo lids. Oven, microwave, and dishwasher safe.',
-            price: 90,
-            originalPrice: 120,
-            category: 'Kitchen',
-            image: 'https://images.unsplash.com/photo-1570197788417-0e82375c9371?w=600&h=400&fit=crop',
-            rating: 4.6,
-            ecoRating: 5,
-            tags: ['glass', 'reusable', 'bamboo', 'food-storage'],
-            inStock: true,
-            fastDelivery: true,
-            reviews: 231
-        },
-        {
-            id: 10,
-            name: 'Organic Cotton Produce Bags Set',
-            description: 'Set of 8 reusable mesh produce bags in various sizes. Perfect for zero-waste grocery shopping and farmers markets.',
-            price: 25,
-            category: 'Home',
-            image: 'https://images.unsplash.com/photo-1584305574647-0cc949a2bfbd?w=600&h=400&fit=crop',
-            rating: 4.3,
-            ecoRating: 5,
-            tags: ['organic', 'mesh', 'produce', 'zero-waste'],
-            inStock: true,
-            fastDelivery: false,
-            reviews: 112
-        }
-    ];
+    const [products, setProducts] = useState<Product[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState('');
+    useEffect(() => {
+        const fetchProducts = async () => {
+            console.log('Fetching products from backend...');
+            try {
+                const response = await fetch('http://localhost:4000/api/products');
+                const data = await response.json();
+    
+                if (!response.ok) throw new Error(data.message || 'Failed to fetch products');
+    
+                // Map backend fields to your frontend Product interface
+                const formattedProducts: Product[] = data.products.map((p: any) => ({
+                    id: p._id,
+                    name: p.productName,
+                    description: p.description,
+                    price: p.price,
+                    originalPrice: p.originalPrice,
+                    category: p.category,
+                    image: p.productImage || '',
+                    rating: p.rating ?? 4.5, // default if not present
+                    ecoRating: p.ecoRating ?? 5,
+                    tags: p.tags ?? [],
+                    inStock: p.inStock ?? true,
+                    fastDelivery: p.fastDelivery ?? false,
+                    reviews: p.reviews ?? 0,
+                }));
+    
+                setProducts(formattedProducts);
+            } catch (err: any) {
+                console.error(err);
+                setError(err.message);
+            } finally {
+                setLoading(false);
+            }
+        };
+    
+        fetchProducts();
+    }, []);
+    
 
     const categories = ['all', 'Personal Care', 'Kitchen', 'Fashion', 'Electronics', 'Home'];
 
@@ -192,26 +85,32 @@ const SustainableProducts: React.FC = () => {
         totalProducts: products.length,
         affordableProducts: products.filter(p => p.price <= userCoins).length,
         totalValue: products.reduce((sum, product) => sum + product.price, 0),
-        averageRating: (products.reduce((sum, product) => sum + product.rating, 0) / products.length).toFixed(1)
+        averageRating: products.length > 0
+    ? (products.reduce((sum, product) => sum + product.rating, 0) / products.length).toFixed(1)
+    : '0.0'
+
     };
 
     const filteredProducts = products.filter(product => {
         const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                             product.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
                             product.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()));
-        const matchesCategory = categoryFilter === 'all' || product.category === categoryFilter;
+                            const matchesCategory =
+                            categoryFilter === 'all' ||
+                            product.category.toLowerCase() === categoryFilter.toLowerCase();                          
         return matchesSearch && matchesCategory;
     });
 
     // Navigation to /redeem is handled via Link in the CTA button.
 
-    const toggleWishlist = (productId: number) => {
+    const toggleWishlist = (productId: string) => {
         setWishlist(prev => 
             prev.includes(productId) 
                 ? prev.filter(id => id !== productId)
                 : [...prev, productId]
         );
     };
+    
 
     const renderStars = (rating: number) => {
         return (

@@ -780,7 +780,9 @@
     font-weight: 600;
     font-size: 0.9rem;
 }
-
+.side-heading{
+    color:red;
+}
 .partner-type {
     background: #e7f3ff;
     color: #004085;
