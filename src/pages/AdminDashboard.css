@@ -2,6 +2,9 @@
     padding: 20px;
     background-color: #f8f9fa;
     min-height: 100vh;
+    /* allow overflow so layout can span full width without clipping */
+    overflow-x: visible;
+    box-sizing: border-box;
 }
 
 .admin-overview {
@@ -207,8 +210,9 @@
 
 .requests-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(450px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
     gap: 25px;
+    width: 100%;
 }
 
 .request-card {
@@ -824,8 +828,14 @@
 }
 
 .main-content {
-    max-width: 1200px;
-    margin: 0 auto;
+    /* make content span the full viewport width */
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+    padding-left: 24px;
+    padding-right: 24px;
+    box-sizing: border-box;
+    overflow-x: visible;
 }
 
 /* Page header */
@@ -945,8 +955,9 @@
 /* Overview sections */
 .overview-content {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
     gap: 24px;
+    width: 100%;
 }
 
 .overview-section {

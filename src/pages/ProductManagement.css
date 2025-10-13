@@ -67,7 +67,8 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background: rgba(0, 0, 0, 0.5);
+    /* darker overlay so underlying content is hidden */
+    background: rgba(0, 0, 0, 1) !important;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -76,7 +77,8 @@
 }
 
 .product-form {
-    background: white;
+    /* solid/near-solid black modal background to avoid transparency */
+    background: #000000;
     border-radius: 15px;
     padding: 30px;
     width: 100%;
@@ -97,7 +99,7 @@
 
 .form-header h3 {
     margin: 0;
-    color: #333;
+    color: #ffffff;
     font-size: 1.5rem;
 }
 
@@ -530,7 +532,7 @@
 
 .price, .coins { color: #fff; }
 
-.stock { color: #000; }
+.stock { color: #ffffff; }
 .stock.low-stock { background: rgba(255, 193, 7, 0.25); color: #000; }
 .stock.out-of-stock { background: rgba(220, 53, 69, 0.25); color: #000; }
 
