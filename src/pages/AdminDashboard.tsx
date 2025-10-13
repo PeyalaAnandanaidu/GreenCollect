@@ -3,7 +3,7 @@ import './AdminDashboard.css';
 import { 
     FaUsers, FaUserCheck, FaChartLine, FaCheck, FaTimes, 
     FaEnvelope, FaPhone, FaMapMarkerAlt, FaClock, 
-    FaRecycle, FaTruck, FaStore, FaPlus 
+    FaRecycle, FaTruck, FaPlus
 } from 'react-icons/fa';
 import ProductManagement from './ProductManagement';
 
@@ -192,7 +192,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ activeTab }) => {
 
     const pendingRequests = collectorRequests.filter(req => req.status === 'pending');
     const approvedRequests = collectorRequests.filter(req => req.status === 'approved');
-    const rejectedRequests = collectorRequests.filter(req => req.status === 'rejected');
+    // const rejectedRequests = collectorRequests.filter(req => req.status === 'rejected');
 
     if (loading) {
         return (

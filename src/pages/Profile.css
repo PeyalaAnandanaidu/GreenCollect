@@ -79,10 +79,14 @@
 .setting-right { color: #bdbdbd; }
 
 .btn { padding: 8px 12px; border-radius: 10px; font-weight: 700; cursor: pointer; transition: all .2s ease; }
-.btn-yellow { background: #ffcc00; border: none; color: #111; box-shadow: 0 4px 14px rgba(255,204,0,0.25); }
+.btn-yellow { background: #ffcc00; border: none; color: #fff; box-shadow: 0 4px 14px rgba(255,204,0,0.25); }
 .btn-yellow:hover { transform: translateY(-1px); box-shadow: 0 6px 18px rgba(255,204,0,0.35); }
-.btn-outline { background: transparent; border: 1px solid rgba(255,255,255,0.16); color: #eaeaea; }
+.btn-outline { background: transparent; border: 1px solid rgba(255,255,255,0.18); color: #ffffff; }
 .btn-outline:hover { border-color: rgba(255,255,255,0.28); }
+
+/* ensure buttons inside the settings-right area are visible */
+.setting-right .btn { color: #ffffff !important; }
+
 
 .activity-list { list-style: none; padding: 0; margin: 0; display: grid; gap: 10px; }
 .activity-item { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.07); border-radius: 10px; padding: 10px 12px; color: #cfcfcf; }

@@ -34,7 +34,7 @@ interface StatusPageProps {
   activeTab?: string;
 }
 
-const StatusPage: React.FC<StatusPageProps> = ({ onTabChange, activeTab = 'status' }) => {
+const StatusPage: React.FC<StatusPageProps> = ({ onTabChange }) => {
     const [searchTerm, setSearchTerm] = useState('');
     const [statusFilter, setStatusFilter] = useState<string>('all');
     const [mounted, setMounted] = useState(false);

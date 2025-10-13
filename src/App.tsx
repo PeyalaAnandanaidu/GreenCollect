@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { AuthProvider, useAuth } from './contexts/AuthContext'; // Import AuthProvider
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
+import ElevenLabsEmbed from './components/ElevenLabsEmbed';
 import Home from './pages/Home';
 import Login from './pages/Login';
 import Register from './pages/Register';
@@ -71,7 +72,6 @@ function AppContent() {
             element={
               <StatusPage
                 onTabChange={handleTabChange}
-                activeTab={activeTab}
               />
             }
           />
@@ -80,10 +80,6 @@ function AppContent() {
             element={
               <Profile
                 onTabChange={handleTabChange}
-                activeTab={activeTab}
-                role={user?.role || 'user'}
-                onLogout={handleLogout}
-                user={user} // Pass user data to profile
               />
             }
           />
@@ -92,6 +88,8 @@ function AppContent() {
         </Routes>
       </div>
       <Footer />
+  {/* ElevenLabs ConvAI widget (single integration) */}
+  <ElevenLabsEmbed isLoggedIn={!!user} />
     </Router>
   );
 }

@@ -14,7 +14,6 @@ import {
   FaSignOutAlt,
   FaHandshake,
   FaStore,
-  FaCog,
   FaCartArrowDown,
 } from 'react-icons/fa';
 import './Navbar.css';
@@ -141,10 +140,7 @@ const Navbar: React.FC<NavbarProps> = ({
     navigate('/');
   };
 
-  const handleTabChange = (tab: string) => {
-    onTabChange(tab);
-    onMenuToggle();
-  };
+  // onTabChange is already supplied via props; callers should use onTabChange directly.
 
   const handleDashboardOverview = () => {
     onTabChange('overview');

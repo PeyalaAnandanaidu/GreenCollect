@@ -1,5 +1,5 @@
 import './Home.css';
-import { FaRecycle, FaLeaf, FaTruck, FaCoins, FaHandsHelping, FaCheckCircle, FaArrowRight, FaUsers, FaChartLine, FaMobileAlt, FaShieldAlt } from 'react-icons/fa';
+import { FaRecycle, FaLeaf, FaTruck, FaCoins, FaArrowRight, FaUsers, FaChartLine, FaMobileAlt, FaShieldAlt } from 'react-icons/fa';
 import { Typewriter } from 'react-simple-typewriter';
 import { useEffect, useRef, useState } from 'react';
 

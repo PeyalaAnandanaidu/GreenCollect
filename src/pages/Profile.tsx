@@ -9,13 +9,7 @@ import {
 } from 'react-icons/fa';
 import { useAuth } from '../contexts/AuthContext';
 
-const Profile = ({ 
-  onTabChange, 
-  activeTab = 'profile'
-}: { 
-  onTabChange?: (tab: string) => void; 
-  activeTab?: string; 
-}) => {
+const Profile = ({ onTabChange }: { onTabChange?: (tab: string) => void }) => {
   const [mounted, setMounted] = useState(false);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const navigate = useNavigate();
