@@ -41,9 +41,15 @@ const productSchema = new mongoose.Schema({
     },
     productImage: {
         type: String,
-        // required: [true, 'Product image URL is required.'],
+        required: [true, 'Product image URL is required.'],
         default: 'https://img10.hotstar.com/image/upload/f_auto,h_156/sources/r1/cms/prod/1661/1371661-t-a4a551a85a80'
-    }
+    },
+    slug: {
+        type: String,
+        unique: true,
+        default: function() { return this.productName.toLowerCase().replace(/\s+/g, '-') + '-' + Date.now(); }
+      }
+      
 }, {
     // Options for the schema
     timestamps: true // Automatically adds `createdAt` and `updatedAt` fields to the documents.

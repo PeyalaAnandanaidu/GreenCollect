@@ -21,11 +21,12 @@ const upload = multer({ storage: storage });
  * Creates a new product with an image upload.
  * The request must be multipart/form-data.
  */
+// POST /products
 router.post('/', upload.single('productImage'), async (req, res) => {
+  console.log('Create Product Request Body:', req.body);
   try {
     let uploadResult = null;
 
-    // ✅ Upload to Cloudinary only if image is provided
     if (req.file) {
       uploadResult = await new Promise((resolve, reject) => {
         const uploadStream = cloudinary.uploader.upload_stream(
@@ -39,7 +40,6 @@ router.post('/', upload.single('productImage'), async (req, res) => {
       });
     }
 
-    // ✅ Create new product
     const newProduct = new Product({
       productName: req.body.productName,
       category: req.body.category,
@@ -47,9 +47,13 @@ router.post('/', upload.single('productImage'), async (req, res) => {
       price: req.body.price,
       coinsRequired: req.body.coinsRequired,
       stockQuantity: req.body.stockQuantity,
-      // productImage: uploadResult ? uploadResult.secure_url : null,
-      cloudinaryId: uploadResult ? uploadResult.public_id : null
+      productImage: uploadResult ? uploadResult.secure_url : null, // ✅ save image URL
+      cloudinaryId: uploadResult ? uploadResult.public_id : null,   // ✅ save Cloudinary ID for future delete
+      isActive: true
     });
+    console.log('New Product to be saved:', newProduct);
+    // In your backend create-product API, before saving
+    delete req.body.slug; // remove any slug field if it exists
 
     const savedProduct = await newProduct.save();
 
@@ -66,6 +70,7 @@ router.post('/', upload.single('productImage'), async (req, res) => {
     });
   }
 });
+
 router.put('/update/:id', upload.single('productImage'), async (req, res) => {
   console.log('Update Product Request Body:', req.body);
   try {

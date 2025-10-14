@@ -1,4 +1,6 @@
-import { useState,useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
+
+
 import './ProductManagement.css';
 import { FaPlus, FaEdit, FaTrash, FaImage, FaRupeeSign } from 'react-icons/fa';
 interface Product {
@@ -14,6 +16,7 @@ interface Product {
 }
 
 const ProductManagement = () => {
+    const fileInputRef = useRef<HTMLInputElement | null>(null);
     const [products, setProducts] = useState<Product[]>([
         {
             id: '1',
@@ -390,22 +393,26 @@ const handleDeleteProduct = async (productId: string) => {
                                 </div>
                                 <div className="form-group full-width">
                                     <label>Product Image</label>
-                                    <div className="image-upload">
+                                    <div
+                                        className="image-upload"
+                                        onClick={() => fileInputRef.current?.click()}  // 👈 triggers file input
+                                        >
                                         <FaImage className="upload-icon" />
-                                        <span>Click to upload product image</span>
+                                        <span>{formData.imageFile ? formData.imageFile.name : 'Click to upload product image'}</span>
                                         <input
+                                            ref={fileInputRef}
                                             type="file"
                                             accept="image/*"
                                             onChange={e => {
-                                                const file = e.target.files?.[0];
-                                                if (file) {
+                                            const file = e.target.files?.[0];
+                                            if (file) {
                                                 setFormData(prev => ({ ...prev, imageFile: file }));
-                                                }
+                                            }
                                             }}
                                             style={{ display: 'none' }}
-                                            />
+                                        />
+                                        </div>
 
-                                    </div>
                                 </div>
                             </div>
                             <div className="form-actions">
