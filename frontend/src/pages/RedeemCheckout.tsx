@@ -1,7 +1,7 @@
-import { useEffect, useMemo, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { FaCoins, FaArrowLeft, FaMapMarkerAlt, FaTruck, FaCheck, FaShoppingCart } from 'react-icons/fa';
 import './RedeemCheckout.css';
-import { FaCoins, FaMapMarkerAlt, FaTruck, FaClipboardCheck, FaChevronLeft } from 'react-icons/fa';
 
 interface Product {
   id: number;
@@ -13,463 +13,407 @@ interface Product {
   image: string;
 }
 
-type Step = 1 | 2 | 3;
+interface Address {
+  fullName: string;
+  phone: string;
+  email: string;
+  address: string;
+  city: string;
+  state: string;
+  pincode: string;
+  country: string;
+}
 
 const RedeemCheckout: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const product = (location.state as { product?: Product })?.product;
 
-  const [step, setStep] = useState<Step>(1);
-  const [placing, setPlacing] = useState(false);
-  const [success, setSuccess] = useState<{ orderId: string } | null>(null);
-
-  const [address, setAddress] = useState({
+  const [currentStep, setCurrentStep] = useState(1);
+  const [isLoading, setIsLoading] = useState(false);
+  
+  const [address, setAddress] = useState<Address>({
     fullName: '',
     phone: '',
     email: '',
-  label: 'Home' as 'Home' | 'Work' | 'Other',
-    line1: '',
-    line2: '',
+    address: '',
     city: '',
     state: '',
     pincode: '',
-    country: 'India',
-    notes: ''
+    country: 'India'
   });
 
-  const [delivery, setDelivery] = useState({
-    speed: 'standard' as 'standard' | 'express',
-    slot: 'Anytime',
-  });
-
-  type Address = typeof address;
-  const [savedAddresses, setSavedAddresses] = useState<(Address & { isDefault?: boolean })[]>([]);
-  const [selectedAddrIdx, setSelectedAddrIdx] = useState<number | 'new'>(-1);
-  const [saveAddress, setSaveAddress] = useState(true);
-  const [editingIdx, setEditingIdx] = useState<number | null>(null);
+  const [deliveryOption, setDeliveryOption] = useState<'standard' | 'express'>('standard');
+  const [userCoins, setUserCoins] = useState(0);
 
   useEffect(() => {
-    // Prefill from localStorage profile if present
+    // Load user data and coins
     try {
-      const saved = localStorage.getItem('profile.details');
-      if (saved) {
-        const { name, email } = JSON.parse(saved);
-        setAddress((a) => ({ ...a, fullName: name || a.fullName, email: email || a.email }));
+      const userData = localStorage.getItem('user');
+      if (userData) {
+        const user = JSON.parse(userData);
+        setUserCoins(user.coins || 0);
+        setAddress(prev => ({
+          ...prev,
+          fullName: user.name || '',
+          email: user.email || '',
+          phone: user.phone || ''
+        }));
       }
-      const addrRaw = localStorage.getItem('redeem.addresses');
-      if (addrRaw) {
-        const parsed = JSON.parse(addrRaw) as (Partial<Address> & { isDefault?: boolean })[];
-        const list = parsed.map((a) => ({
-          ...a,
-          label: (a as any).label || 'Home',
-        })) as (Address & { isDefault?: boolean })[];
-        setSavedAddresses(list);
-        if (list.length > 0) {
-          const defIdx = list.findIndex(a => a.isDefault);
-          setSelectedAddrIdx(defIdx >= 0 ? defIdx : 0);
-        } else {
-          setSelectedAddrIdx('new');
-        }
-      } else {
-        setSelectedAddrIdx('new');
-      }
-    } catch {}
+    } catch (error) {
+      console.error('Error loading user data:', error);
+    }
   }, []);
-
-  const canContinueStep1 = useMemo(() => {
-    const { fullName, phone, line1, city, state, pincode } = address;
-    return (
-      fullName.trim().length >= 2 &&
-      /^\+?\d{10,15}$/.test(phone.replace(/\s|-/g, '')) &&
-      line1.trim().length >= 3 &&
-      city.trim().length >= 2 &&
-      state.trim().length >= 2 &&
-      /^\d{5,6}$/.test(pincode)
-    );
-  }, [address]);
-
-  const canProceedAddress = selectedAddrIdx === 'new' ? canContinueStep1 : (selectedAddrIdx as number) >= 0 && savedAddresses[(selectedAddrIdx as number)] != null;
 
   if (!product) {
     return (
-      <div className="redeem-page">
-        <div className="redeem-container">
-          <div className="empty-card animate-in">
-            <h2>No product selected</h2>
-            <p>Please choose a product from the Eco Store to redeem.</p>
-            <button className="btn btn-yellow" onClick={() => navigate('/dashboard')}>Back to Store</button>
+      <div className="checkout-page">
+        <div className="checkout-container">
+          <div className="error-card">
+            <h2>No Product Selected</h2>
+            <p>Please select a product from the Eco Store to proceed with checkout.</p>
+            <button className="btn-primary" onClick={() => navigate('/dashboard')}>
+              <FaShoppingCart /> Back to Store
+            </button>
           </div>
         </div>
       </div>
     );
   }
 
-  const placeOrder = async () => {
-    setPlacing(true);
-    // Simulate API
-    await new Promise((r) => setTimeout(r, 900));
-    const orderId = `JG-ORD-${Date.now().toString().slice(-8)}`;
-    try {
-      const prev = JSON.parse(localStorage.getItem('redeem.orders') || '[]');
-      prev.push({ orderId, product, address, delivery, createdAt: new Date().toISOString() });
-      localStorage.setItem('redeem.orders', JSON.stringify(prev));
-    } catch {}
-  setSuccess({ orderId });
-  setPlacing(false);
-  navigate('/order-success', { state: { orderId, product, totalCoins: product.price + (delivery.speed === 'express' ? 25 : 0) } });
+  const deliveryCost = deliveryOption === 'express' ? 25 : 0;
+  const totalCost = product.price + deliveryCost;
+  const canAfford = userCoins >= totalCost;
+
+  const validateAddress = () => {
+    return (
+      address.fullName.trim().length >= 2 &&
+      address.phone.trim().length >= 10 &&
+      address.address.trim().length >= 5 &&
+      address.city.trim().length >= 2 &&
+      address.state.trim().length >= 2 &&
+      address.pincode.trim().length >= 5
+    );
   };
 
+  const handleNext = () => {
+    if (currentStep === 1 && validateAddress()) {
+      setCurrentStep(2);
+    } else if (currentStep === 2) {
+      setCurrentStep(3);
+    }
+  };
+
+  const handlePlaceOrder = async () => {
+    if (!canAfford) return;
+    
+    setIsLoading(true);
+    
+    try {
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      const orderId = `GC-${Date.now().toString().slice(-8)}`;
+      const orderData = {
+        orderId,
+        product,
+        address,
+        deliveryOption,
+        totalCost,
+        createdAt: new Date().toISOString()
+      };
+      
+      // Save order to localStorage
+      const existingOrders = JSON.parse(localStorage.getItem('orders') || '[]');
+      existingOrders.push(orderData);
+      localStorage.setItem('orders', JSON.stringify(existingOrders));
+      
+      // Update user coins
+      const userData = JSON.parse(localStorage.getItem('user') || '{}');
+      userData.coins = (userData.coins || 0) - totalCost;
+      localStorage.setItem('user', JSON.stringify(userData));
+      
+      navigate('/order-success', { 
+        state: { 
+          orderId, 
+          product, 
+          totalCoins: totalCost 
+        } 
+      });
+      
+    } catch (error) {
+      console.error('Error placing order:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const renderStepIndicator = () => (
+    <div className="step-indicator">
+      <div className={`step ${currentStep >= 1 ? 'active' : ''} ${currentStep > 1 ? 'completed' : ''}`}>
+        <div className="step-circle">
+          {currentStep > 1 ? <FaCheck /> : <FaMapMarkerAlt />}
+        </div>
+        <span>Address</span>
+      </div>
+      <div className="step-line"></div>
+      <div className={`step ${currentStep >= 2 ? 'active' : ''} ${currentStep > 2 ? 'completed' : ''}`}>
+        <div className="step-circle">
+          {currentStep > 2 ? <FaCheck /> : <FaTruck />}
+        </div>
+        <span>Delivery</span>
+      </div>
+      <div className="step-line"></div>
+      <div className={`step ${currentStep >= 3 ? 'active' : ''}`}>
+        <div className="step-circle">
+          <FaCheck />
+        </div>
+        <span>Review</span>
+      </div>
+    </div>
+  );
+
+  const renderAddressForm = () => (
+    <div className="form-section">
+      <h3>Delivery Address</h3>
+      <div className="form-grid">
+        <div className="form-group">
+          <label>Full Name *</label>
+          <input
+            type="text"
+            value={address.fullName}
+            onChange={(e) => setAddress({...address, fullName: e.target.value})}
+            placeholder="Enter your full name"
+            required
+          />
+        </div>
+        <div className="form-group">
+          <label>Phone Number *</label>
+          <input
+            type="tel"
+            value={address.phone}
+            onChange={(e) => setAddress({...address, phone: e.target.value})}
+            placeholder="Enter your phone number"
+            required
+          />
+        </div>
+        <div className="form-group full-width">
+          <label>Email</label>
+          <input
+            type="email"
+            value={address.email}
+            onChange={(e) => setAddress({...address, email: e.target.value})}
+            placeholder="Enter your email address"
+          />
+        </div>
+        <div className="form-group full-width">
+          <label>Address *</label>
+          <textarea
+            value={address.address}
+            onChange={(e) => setAddress({...address, address: e.target.value})}
+            placeholder="Enter your complete address"
+            rows={3}
+            required
+          />
+        </div>
+        <div className="form-group">
+          <label>City *</label>
+          <input
+            type="text"
+            value={address.city}
+            onChange={(e) => setAddress({...address, city: e.target.value})}
+            placeholder="Enter city"
+            required
+          />
+        </div>
+        <div className="form-group">
+          <label>State *</label>
+          <input
+            type="text"
+            value={address.state}
+            onChange={(e) => setAddress({...address, state: e.target.value})}
+            placeholder="Enter state"
+            required
+          />
+        </div>
+        <div className="form-group">
+          <label>Pincode *</label>
+          <input
+            type="text"
+            value={address.pincode}
+            onChange={(e) => setAddress({...address, pincode: e.target.value})}
+            placeholder="Enter pincode"
+            required
+          />
+        </div>
+        <div className="form-group">
+          <label>Country</label>
+          <input
+            type="text"
+            value={address.country}
+            onChange={(e) => setAddress({...address, country: e.target.value})}
+            placeholder="Enter country"
+          />
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderDeliveryOptions = () => (
+    <div className="form-section">
+      <h3>Delivery Options</h3>
+      <div className="delivery-options">
+        <label className={`delivery-option ${deliveryOption === 'standard' ? 'selected' : ''}`}>
+          <input
+            type="radio"
+            name="delivery"
+            value="standard"
+            checked={deliveryOption === 'standard'}
+            onChange={() => setDeliveryOption('standard')}
+          />
+          <div className="option-content">
+            <div className="option-title">Standard Delivery</div>
+            <div className="option-subtitle">5-7 business days • Free</div>
+          </div>
+          <div className="option-price">Free</div>
+        </label>
+        <label className={`delivery-option ${deliveryOption === 'express' ? 'selected' : ''}`}>
+          <input
+            type="radio"
+            name="delivery"
+            value="express"
+            checked={deliveryOption === 'express'}
+            onChange={() => setDeliveryOption('express')}
+          />
+          <div className="option-content">
+            <div className="option-title">Express Delivery</div>
+            <div className="option-subtitle">2-3 business days</div>
+          </div>
+          <div className="option-price">
+            <FaCoins /> 25
+          </div>
+        </label>
+      </div>
+    </div>
+  );
+
+  const renderOrderReview = () => (
+    <div className="form-section">
+      <h3>Order Review</h3>
+      <div className="review-content">
+        <div className="address-review">
+          <h4>Delivery Address</h4>
+          <p>
+            {address.fullName}<br />
+            {address.address}<br />
+            {address.city}, {address.state} {address.pincode}<br />
+            {address.country}<br />
+            Phone: {address.phone}
+          </p>
+        </div>
+        <div className="delivery-review">
+          <h4>Delivery Option</h4>
+          <p>
+            {deliveryOption === 'standard' ? 'Standard Delivery (Free)' : 'Express Delivery (25 coins)'}
+            <br />
+            {deliveryOption === 'standard' ? '5-7 business days' : '2-3 business days'}
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+
   return (
-    <div className="redeem-page">
-      <div className="redeem-container">
-        <div className="header-row animate-in">
+    <div className="checkout-page">
+      <div className="checkout-container">
+        {/* Header */}
+        <div className="checkout-header">
           <button className="back-btn" onClick={() => navigate(-1)}>
-            <FaChevronLeft /> Back
+            <FaArrowLeft /> Back
           </button>
-          <h1 className="title">Redeem Checkout</h1>
+          <h1>Checkout</h1>
         </div>
 
-  <div className={`content-grid animate-in delay-1 ${step === 1 ? 'single' : ''}`}>
-          {/* Left: Steps */}
-          <div className="left-col">
-            {/* Stepper */}
-            <div className="stepper animate-in delay-1">
-              <div className={`step ${step >= 1 ? 'active' : ''}`}>
-                <div className="step-icon"><FaMapMarkerAlt /></div>
-                <div className="step-label">Delivery Address</div>
-              </div>
-              <div className={`step ${step >= 2 ? 'active' : ''}`}>
-                <div className="step-icon"><FaTruck /></div>
-                <div className="step-label">Delivery Options</div>
-              </div>
-              <div className={`step ${step >= 3 ? 'active' : ''}`}>
-                <div className="step-icon"><FaClipboardCheck /></div>
-                <div className="step-label">Review & Place</div>
-              </div>
+        {/* Step Indicator */}
+        {renderStepIndicator()}
+
+        <div className="checkout-content">
+          {/* Main Content */}
+          <div className="checkout-main">
+            {currentStep === 1 && renderAddressForm()}
+            {currentStep === 2 && renderDeliveryOptions()}
+            {currentStep === 3 && renderOrderReview()}
+
+            {/* Navigation Buttons */}
+            <div className="checkout-actions">
+              {currentStep > 1 && (
+                <button 
+                  className="btn-secondary" 
+                  onClick={() => setCurrentStep(currentStep - 1)}
+                >
+                  Previous
+                </button>
+              )}
+              {currentStep < 3 ? (
+                <button 
+                  className="btn-primary" 
+                  onClick={handleNext}
+                  disabled={currentStep === 1 && !validateAddress()}
+                >
+                  Next
+                </button>
+              ) : (
+                <button 
+                  className={`btn-primary ${!canAfford ? 'disabled' : ''}`}
+                  onClick={handlePlaceOrder}
+                  disabled={!canAfford || isLoading}
+                >
+                  {isLoading ? 'Placing Order...' : `Place Order (${totalCost} coins)`}
+                </button>
+              )}
             </div>
 
-            {step === 1 && (
-              <div className="card card-address animate-in delay-2">
-                <h2 className="card-title">Delivery Address</h2>
-
-                {/* My Addresses */}
-                <div className="addresses-block">
-                  <div className="addresses-header">
-                    <div className="addresses-title">My Addresses</div>
-                    <button
-                      type="button"
-                      className="link-btn"
-                      onClick={() => {
-                        setSelectedAddrIdx('new');
-                        setEditingIdx(null);
-                        setAddress({
-                          fullName: '', phone: '', email: '', label: 'Home', line1: '', line2: '', city: '', state: '', pincode: '', country: 'India', notes: ''
-                        });
-                      }}
-                    >
-                      + Add New Location
-                    </button>
-                  </div>
-                  {savedAddresses.length === 0 ? (
-                    <div className="addresses-empty">No saved addresses yet.</div>
-                  ) : (
-                    <div className="addresses-list">
-                      {savedAddresses.map((addr, idx) => (
-                        <label key={idx} className={`address-item ${selectedAddrIdx === idx ? 'selected' : ''}`}>
-                          <input
-                            type="radio"
-                            name="savedAddress"
-                            checked={selectedAddrIdx === idx}
-                            onChange={() => {
-                              setSelectedAddrIdx(idx);
-                              setAddress(addr);
-                            }}
-                          />
-                          <div className="address-lines">
-                            <div className="address-line-strong">
-                              {addr.fullName} • {addr.phone}
-                              {addr.isDefault && <span className="addr-badge">Default</span>}
-                              {addr.label && <span className="addr-badge badge-soft">{addr.label}</span>}
-                            </div>
-                            <div className="address-line">{addr.line1}{addr.line2 ? `, ${addr.line2}` : ''}</div>
-                            <div className="address-line">{addr.city}, {addr.state} {addr.pincode}, {addr.country}</div>
-                            <div className="addr-actions">
-                              {!addr.isDefault && (
-                                <button
-                                  type="button"
-                                  className="addr-action"
-                                  onClick={(e) => {
-                                    e.preventDefault();
-                                    const next = savedAddresses.map((a, i) => ({ ...a, isDefault: i === idx }));
-                                    setSavedAddresses(next);
-                                    try { localStorage.setItem('redeem.addresses', JSON.stringify(next)); } catch {}
-                                  }}
-                                >
-                                  Make default
-                                </button>
-                              )}
-                              <button
-                                type="button"
-                                className="addr-action"
-                                onClick={(e) => {
-                                  e.preventDefault();
-                                  // Edit flow: open form prefilled
-                                  setEditingIdx(idx);
-                                  setSelectedAddrIdx('new');
-                                  setAddress({ ...addr });
-                                }}
-                              >
-                                Edit
-                              </button>
-                              <button
-                                type="button"
-                                className="addr-action danger"
-                                onClick={(e) => {
-                                  e.preventDefault();
-                                  const next = savedAddresses.filter((_, i) => i !== idx);
-                                  setSavedAddresses(next);
-                                  try { localStorage.setItem('redeem.addresses', JSON.stringify(next)); } catch {}
-                                  if (selectedAddrIdx === idx) setSelectedAddrIdx(next.length ? 0 : 'new');
-                                }}
-                              >
-                                Delete
-                              </button>
-                            </div>
-                          </div>
-                        </label>
-                      ))}
-                    </div>
-                  )}
-                </div>
-                <div className="form-grid" style={{ display: selectedAddrIdx === 'new' ? 'grid' as const : 'none' }}>
-                  <div className="two-col">
-                    <div className="form-row">
-                      <label>Full Name</label>
-                      <input value={address.fullName} onChange={(e) => setAddress({ ...address, fullName: e.target.value })} />
-                    </div>
-                  </div>
-                  <div className="two-col">
-                    <div className="form-row">
-                      <label>Phone</label>
-                      <input placeholder="10-15 digits" value={address.phone} onChange={(e) => setAddress({ ...address, phone: e.target.value })} />
-                    </div>
-                  </div>
-                  <div className="two-col">
-                    <div className="form-row">
-                      <label>Address Type</label>
-                      <div className="addr-type-pills">
-                        {(['Home','Work','Other'] as const).map(t => (
-                          <button
-                            key={t}
-                            type="button"
-                            className={`pill-btn ${address.label === t ? 'active' : ''}`}
-                            onClick={() => setAddress({ ...address, label: t })}
-                          >{t}</button>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                  <div className="two-col">
-                    <div className="form-row">
-                      <label>Email (optional)</label>
-                      <input type="email" value={address.email} onChange={(e) => setAddress({ ...address, email: e.target.value })} />
-                    </div>
-                  </div>
-                  <div className="two-col">
-                    <div className="form-row">
-                      <label>Country</label>
-                      <input value={address.country} onChange={(e) => setAddress({ ...address, country: e.target.value })} />
-                    </div>
-                  </div>
-                  <div className="two-col">
-                    <div className="form-row">
-                      <label>Address Line 1</label>
-                      <input value={address.line1} onChange={(e) => setAddress({ ...address, line1: e.target.value })} />
-                    </div>
-                  </div>
-                  <div className="two-col">
-                    <div className="form-row">
-                      <label>Address Line 2 (optional)</label>
-                      <input value={address.line2} onChange={(e) => setAddress({ ...address, line2: e.target.value })} />
-                    </div>
-                  </div>
-                  <div className="two-col">
-                    <div className="form-row">
-                      <label>City</label>
-                      <input value={address.city} onChange={(e) => setAddress({ ...address, city: e.target.value })} />
-                    </div>
-                  </div>
-                  <div className="two-col">
-                    <div className="form-row">
-                      <label>State</label>
-                      <input value={address.state} onChange={(e) => setAddress({ ...address, state: e.target.value })} />
-                    </div>
-                  </div>
-                  <div className="two-col">
-                    <div className="form-row">
-                      <label>Pincode</label>
-                      <input value={address.pincode} onChange={(e) => setAddress({ ...address, pincode: e.target.value })} />
-                    </div>
-                  </div>
-                  <div className="two-col">
-                    <div className="form-row">
-                      <label>Additional Notes (optional)</label>
-                      <textarea value={address.notes} onChange={(e) => setAddress({ ...address, notes: e.target.value })} />
-                    </div>
-                  </div>
-                </div>
-                {selectedAddrIdx === 'new' && (
-                  <div className="save-address-row">
-                    <label className="save-address">
-                      <input type="checkbox" checked={saveAddress} onChange={(e) => setSaveAddress(e.target.checked)} />
-                      <span>Save this address to My Addresses</span>
-                    </label>
-                  </div>
-                )}
-                <div className="actions">
-                  <button className="btn btn-outline" onClick={() => navigate('/dashboard')}>Cancel</button>
-                  <button
-                    className="btn btn-yellow"
-                    disabled={!canProceedAddress}
-                    onClick={() => {
-                      if (selectedAddrIdx === 'new') {
-                        if (editingIdx != null) {
-                          const next = savedAddresses.map((a, i) => i === editingIdx ? { ...address, isDefault: a.isDefault } : a);
-                          setSavedAddresses(next);
-                          try { localStorage.setItem('redeem.addresses', JSON.stringify(next)); } catch {}
-                          setSelectedAddrIdx(editingIdx);
-                          setEditingIdx(null);
-                        } else if (saveAddress) {
-                          const next = [...savedAddresses, address];
-                          setSavedAddresses(next);
-                          try { localStorage.setItem('redeem.addresses', JSON.stringify(next)); } catch {}
-                          setSelectedAddrIdx(next.length - 1);
-                        }
-                      } else if (typeof selectedAddrIdx === 'number' && savedAddresses[selectedAddrIdx]) {
-                        setAddress(savedAddresses[selectedAddrIdx]);
-                      }
-                      setStep(2);
-                    }}
-                  >
-                    Continue
-                  </button>
-                </div>
-              </div>
-            )}
-            {step === 1 && (
-              <div className="card product-details-below animate-in delay-3">
-                <h2 className="card-title">Product Details</h2>
-                <div className="below-product">
-                  <img src={product.image} alt={product.name} />
-                  <div className="bp-info">
-                    <div className="bp-name" title={product.name}>{product.name}</div>
-                    <div className="bp-category">{product.category}</div>
-                    <div className="bp-price"><FaCoins /> {product.price}</div>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {step === 2 && (
-              <div className="card animate-in delay-2">
-                <h2 className="card-title">Delivery Options</h2>
-                <div className="delivery-options">
-                  <label className={`option ${delivery.speed === 'standard' ? 'selected' : ''}`}>
-                    <input type="radio" name="speed" checked={delivery.speed === 'standard'} onChange={() => setDelivery({ ...delivery, speed: 'standard' })} />
-                    <div>
-                      <div className="option-title">Standard Delivery</div>
-                      <div className="option-sub">3-5 days • Free</div>
-                    </div>
-                  </label>
-                  <label className={`option ${delivery.speed === 'express' ? 'selected' : ''}`}>
-                    <input type="radio" name="speed" checked={delivery.speed === 'express'} onChange={() => setDelivery({ ...delivery, speed: 'express' })} />
-                    <div>
-                      <div className="option-title">Express Delivery</div>
-                      <div className="option-sub">1-2 days • 25 coins</div>
-                    </div>
-                  </label>
-                </div>
-                <div className="form-row">
-                  <label>Preferred Time Slot</label>
-                  <select value={delivery.slot} onChange={(e) => setDelivery({ ...delivery, slot: e.target.value })}>
-                    <option>Anytime</option>
-                    <option>9 AM - 12 PM</option>
-                    <option>12 PM - 3 PM</option>
-                    <option>3 PM - 6 PM</option>
-                    <option>6 PM - 9 PM</option>
-                  </select>
-                </div>
-                <div className="actions">
-                  <button className="btn btn-outline" onClick={() => setStep(1)}>Back</button>
-                  <button className="btn btn-yellow" onClick={() => setStep(3)}>Review</button>
-                </div>
-              </div>
-            )}
-
-            {step === 3 && (
-              <div className="card animate-in delay-2">
-                <h2 className="card-title">Review & Place Order</h2>
-                <div className="review-grid">
-                  <div className="review-section">
-                    <h3>Delivery Address</h3>
-                    <p>
-                      {address.fullName}<br/>
-                      {address.line1}{address.line2 ? `, ${address.line2}` : ''}<br/>
-                      {address.city}, {address.state} {address.pincode}<br/>
-                      {address.country}<br/>
-                      {address.phone}
-                    </p>
-                  </div>
-                  <div className="review-section">
-                    <h3>Delivery</h3>
-                    <p>{delivery.speed === 'standard' ? 'Standard (Free)' : 'Express (25 coins)'} • {delivery.slot}</p>
-                  </div>
-                </div>
-                <div className="actions">
-                  <button className="btn btn-outline" onClick={() => setStep(2)}>Back</button>
-                  <button className="btn btn-yellow" disabled={placing} onClick={placeOrder}>
-                    {placing ? 'Placing…' : 'Place Order'}
-                  </button>
-                </div>
-                {success && (
-                  <div className="success-banner">
-                    <div className="success-title">Order Placed!</div>
-                    <div className="success-sub">Order ID: {success.orderId}</div>
-                    <button className="btn btn-outline" onClick={() => navigate('/dashboard')}>Go to Dashboard</button>
-                  </div>
-                )}
+            {!canAfford && currentStep === 3 && (
+              <div className="insufficient-coins">
+                <p>Insufficient coins! You need {totalCost} coins but have {userCoins} coins.</p>
               </div>
             )}
           </div>
 
-          {/* Right: Order Summary (hidden on Step 1) */}
-          {step !== 1 && (
-            <aside className="right-col animate-in delay-3">
-              <div className="summary-card">
-                <div className="product-mini">
-                  <img src={product.image} alt={product.name} />
-                  <div className="mini-info">
-                    <div className="mini-name" title={product.name}>{product.name}</div>
-                    <div className="mini-category">{product.category}</div>
-                  </div>
-                </div>
-                <div className="price-row">
-                  <span>Item Price</span>
-                  <span className="price"><FaCoins /> {product.price}</span>
-                </div>
-                <div className="price-row">
-                  <span>Delivery</span>
-                  <span>{delivery.speed === 'express' ? (<><FaCoins /> 25</>) : 'Free'}</span>
-                </div>
-                <div className="divider" />
-                <div className="price-row total">
-                  <span>Total</span>
-                  <span className="price"><FaCoins /> {product.price + (delivery.speed === 'express' ? 25 : 0)}</span>
-                </div>
+          {/* Order Summary Sidebar */}
+          <div className="order-summary">
+            <h3>Order Summary</h3>
+            <div className="product-summary">
+              <img src={product.image} alt={product.name} />
+              <div className="product-info">
+                <h4>{product.name}</h4>
+                <p>{product.category}</p>
               </div>
-            </aside>
-          )}
+            </div>
+            <div className="price-breakdown">
+              <div className="price-item">
+                <span>Product Price</span>
+                <span><FaCoins /> {product.price}</span>
+              </div>
+              <div className="price-item">
+                <span>Delivery</span>
+                <span>{deliveryCost === 0 ? 'Free' : <><FaCoins /> {deliveryCost}</>}</span>
+              </div>
+              <div className="price-divider"></div>
+              <div className="price-item total">
+                <span>Total</span>
+                <span><FaCoins /> {totalCost}</span>
+              </div>
+            </div>
+            <div className="coins-info">
+              <div className="available-coins">
+                Available Coins: <strong>{userCoins}</strong>
+              </div>
+              <div className="remaining-coins">
+                After Purchase: <strong>{userCoins - totalCost}</strong>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
