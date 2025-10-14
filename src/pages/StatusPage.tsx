@@ -85,7 +85,7 @@ const StatusPage: React.FC<StatusPageProps> = ({ onTabChange }) => {
             console.log('🔄 Fetching user pickups from my-requests endpoint...');
             
             // Use the my-requests endpoint that doesn't require user ID
-            const response = await fetch('http://localhost:4000/api/waste-requests/my-requests', {
+            const response = await fetch('https://greencollect.onrender.com/api/waste-requests/my-requests', {
                 headers: {
                     'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json'

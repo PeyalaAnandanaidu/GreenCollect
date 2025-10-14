@@ -87,7 +87,7 @@ const SchedulePickup: React.FC<SchedulePickupProps> = ({ onClose, userId }) => {
 
       const token = localStorage.getItem('token') || sessionStorage.getItem('token');
       
-      const response = await fetch('http://localhost:4000/api/waste-requests', {
+      const response = await fetch('https://greencollect.onrender.com/api/waste-requests', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

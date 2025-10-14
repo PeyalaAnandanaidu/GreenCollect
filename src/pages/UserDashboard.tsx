@@ -106,7 +106,7 @@ const UserDashboard: React.FC<UserDashboardProps> = ({ activeTab, onTabChange })
                 return;
             }
 
-            const response = await fetch('http://localhost:4000/api/waste-requests/my-requests', {
+            const response = await fetch('https://greencollect.onrender.com/api/waste-requests/my-requests', {
                 headers: {
                     'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json'

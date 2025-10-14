@@ -35,7 +35,7 @@ const Register = () => {
         };
       }
 
-      const res = await axios.post('http://localhost:4000/api/auth/register', payload);
+      const res = await axios.post('https://greencollect.onrender.com/api/auth/register', payload);
 
       if (res.status === 201) {
         if (role === 'collector') {

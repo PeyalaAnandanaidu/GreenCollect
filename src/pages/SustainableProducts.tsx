@@ -43,7 +43,7 @@ const SustainableProducts: React.FC = () => {
         const fetchProducts = async () => {
             console.log('Fetching products from backend...');
             try {
-                const response = await fetch('http://localhost:4000/api/products');
+                const response = await fetch('https://greencollect.onrender.com/api/products');
                 const data = await response.json();
     
                 if (!response.ok) throw new Error(data.message || 'Failed to fetch products');

@@ -75,7 +75,7 @@ const ProductManagement = () => {
       
     const fetchProducts = async () => {
         try {
-            const res = await fetch('http://localhost:4000/api/products'); // your GET route
+            const res = await fetch('https://greencollect.onrender.com/api/products'); // your GET route
             const data = await res.json();
     
             if (!res.ok) throw new Error(data.message || 'Failed to fetch products');
@@ -121,7 +121,7 @@ const ProductManagement = () => {
         }
       
         try {
-          const res = await fetch('http://localhost:4000/api/products', {
+          const res = await fetch('https://greencollect.onrender.com/api/products', {
             method: 'POST',
             body: formPayload, // multipart/form-data
           });
@@ -184,7 +184,7 @@ const ProductManagement = () => {
         }
       
         try {
-            const res = await fetch(`http://localhost:4000/api/products/update/${editingProduct.id}`, {
+            const res = await fetch(`https://greencollect.onrender.com/api/products/update/${editingProduct.id}`, {
                 method: 'PUT',
                 body: formPayload
             });
@@ -232,7 +232,7 @@ const handleDeleteProduct = async (productId: string) => {
     if (!window.confirm('Are you sure you want to delete this product?')) return;
   
     try {
-      const res = await fetch(`http://localhost:4000/api/products/delete/${productId}`, {
+      const res = await fetch(`https://greencollect.onrender.com/api/products/delete/${productId}`, {
         method: 'DELETE',
       });
   
@@ -254,7 +254,7 @@ const handleDeleteProduct = async (productId: string) => {
     if (!product) return;
   
     try {
-      const res = await fetch(`http://localhost:4000/api/products/update/${productId}`, {
+      const res = await fetch(`https://greencollect.onrender.com/api/products/update/${productId}`, {
         method: 'PUT',
         body: JSON.stringify({ isActive: !product.isActive }),
         headers: { 'Content-Type': 'application/json' }

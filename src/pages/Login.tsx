@@ -25,7 +25,7 @@ const Login = ({ onLogin }: { onLogin?: () => void }) => {
     try {
       console.log('Attempting login...', { email });
       
-      const res = await axios.post('http://localhost:4000/api/auth/login', { 
+      const res = await axios.post('https://greencollect.onrender.com/api/auth/login', { 
         email, 
         password 
       });

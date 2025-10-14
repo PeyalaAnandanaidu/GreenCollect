@@ -559,7 +559,7 @@ router.put('/:requestId/complete', authMiddleware, requireRole(['collector']), a
       await user.save({ validateBeforeSave: false });
       
       console.log(`✅ Awarded ${coinsEarned} coins to user: ${user.name}`);
-      console.log(`💰 User ${user.name} now has ${user.points} total coins`);
+      
     }
 
     res.status(200).json({

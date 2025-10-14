@@ -77,7 +77,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ activeTab }) => {
         };
     
         try {
-            const response = await fetch('http://localhost:4000/api/partners', {
+            const response = await fetch('https://greencollect.onrender.com/api/partners', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -104,7 +104,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ activeTab }) => {
     
     const fetchPartners = async () => {
         try {
-            const response = await fetch('http://localhost:4000/api/partners');
+            const response = await fetch('https://greencollect.onrender.com/api/partners');
             if (!response.ok) throw new Error('Failed to fetch partners');
             const data = await response.json();
             setRecycledPartners(data.companies);
@@ -117,7 +117,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ activeTab }) => {
     const fetchCollectorRequests = async () => {
         try {
             setLoading(true);
-            const response = await fetch('http://localhost:4000/api/admin/collector-requests');
+            const response = await fetch('https://greencollect.onrender.com/api/admin/collector-requests');
             if (response.ok) {
                 const data = await response.json();
                 // Transform backend data to match frontend interface
@@ -150,7 +150,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ activeTab }) => {
 
     const handleApproveRequest = async (requestId: string) => {
         try {
-            const response = await fetch(`http://localhost:4000/api/admin/approve-collector/${requestId}`, {
+            const response = await fetch(`https://greencollect.onrender.com/api/admin/approve-collector/${requestId}`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -176,7 +176,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ activeTab }) => {
 
     const handleRejectRequest = async (requestId: string) => {
         try {
-            const response = await fetch(`http://localhost:4000/api/admin/reject-collector/${requestId}`, {
+            const response = await fetch(`https://greencollect.onrender.com/api/admin/reject-collector/${requestId}`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
