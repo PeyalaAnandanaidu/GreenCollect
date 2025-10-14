@@ -95,7 +95,7 @@ app.get('/', (req, res) => {
 });
 
 const PORT = Number(process.env.PORT || 4000);
-const server = httpServer.listen(PORT, () => {
+const server = httpServer.listen(PORT,'0.0.0.0', () => {
   console.log(`🎯 Server running on port ${PORT}`);
   console.log(`🔗 http://localhost:${PORT}`);
   console.log(`🏥 Health check: http://localhost:${PORT}/api/health`);
