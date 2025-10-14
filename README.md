@@ -105,14 +105,14 @@ Follow these steps to set up and run the **frontend** locally.
 git clone https://github.com/PeyalaAnandanaidu/GreenCollect.git
 cd GreenCollect
 
-### 2️⃣ Install Dependencies
+### 🪜 2️⃣ Install Dependencies
 
 Move into the frontend folder and install the required packages.
 
 cd frontend
 npm install
 
-### 3️⃣ Run the Application
+### 🪜 3️⃣ Run the Application
 
 Start the frontend development server with:
 
@@ -122,7 +122,7 @@ Once it compiles successfully, open the link shown in the terminal (usually):
 
 http://localhost:5173
 
-### 🌍 4️⃣ Access the Application
+### 🪜 🌍 4️⃣ Access the Application
 
 After starting the frontend:
 
@@ -146,7 +146,7 @@ Once the app starts successfully, open it in your browser at:
 
 ---
 
-### 🧠 5️⃣ Troubleshooting
+### 🪜 🧠 5️⃣ Troubleshooting
 
 - ⚠️ **Port already in use:**  
   If you see this error, stop the current process by pressing **Ctrl + C** in the terminal, then rerun the command:
