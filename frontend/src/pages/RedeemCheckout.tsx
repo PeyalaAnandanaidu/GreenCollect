@@ -31,7 +31,7 @@ const RedeemCheckout: React.FC = () => {
 
   const [currentStep, setCurrentStep] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
-  
+
   const [address, setAddress] = useState<Address>({
     fullName: '',
     phone: '',
@@ -46,13 +46,21 @@ const RedeemCheckout: React.FC = () => {
   const [deliveryOption, setDeliveryOption] = useState<'standard' | 'express'>('standard');
   const [userCoins, setUserCoins] = useState(0);
 
+  // ✅ Load user from correct storage + use POINTS (correct field)
   useEffect(() => {
-    // Load user data and coins
     try {
-      const userData = localStorage.getItem('user');
-      if (userData) {
-        const user = JSON.parse(userData);
-        setUserCoins(user.coins || 0);
+      const loginMethod =
+        localStorage.getItem('loginMethod') || sessionStorage.getItem('loginMethod');
+
+      const storage = loginMethod === 'local' ? localStorage : sessionStorage;
+      const userDataRaw = storage.getItem('user');
+
+      if (userDataRaw) {
+        const user = JSON.parse(userDataRaw);
+        const balance = Number(user.points ?? user.coins ?? 0);
+
+        setUserCoins(isNaN(balance) ? 0 : balance);
+
         setAddress(prev => ({
           ...prev,
           fullName: user.name || '',
@@ -85,16 +93,13 @@ const RedeemCheckout: React.FC = () => {
   const totalCost = product.price + deliveryCost;
   const canAfford = userCoins >= totalCost;
 
-  const validateAddress = () => {
-    return (
-      address.fullName.trim().length >= 2 &&
-      address.phone.trim().length >= 10 &&
-      address.address.trim().length >= 5 &&
-      address.city.trim().length >= 2 &&
-      address.state.trim().length >= 2 &&
-      address.pincode.trim().length >= 5
-    );
-  };
+  const validateAddress = () =>
+    address.fullName.trim().length >= 2 &&
+    address.phone.trim().length >= 10 &&
+    address.address.trim().length >= 5 &&
+    address.city.trim().length >= 2 &&
+    address.state.trim().length >= 2 &&
+    address.pincode.trim().length >= 5;
 
   const handleNext = () => {
     if (currentStep === 1 && validateAddress()) {
@@ -104,15 +109,15 @@ const RedeemCheckout: React.FC = () => {
     }
   };
 
+  // ✅ Place Order — deduct POINTS correctly
   const handlePlaceOrder = async () => {
     if (!canAfford) return;
-    
+
     setIsLoading(true);
-    
+
     try {
-      // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 2000));
-      
+
       const orderId = `GC-${Date.now().toString().slice(-8)}`;
       const orderData = {
         orderId,
@@ -120,27 +125,36 @@ const RedeemCheckout: React.FC = () => {
         address,
         deliveryOption,
         totalCost,
-        createdAt: new Date().toISOString()
+        createdAt: new Date().toISOString(),
       };
-      
-      // Save order to localStorage
+
+      // ✅ Save order
       const existingOrders = JSON.parse(localStorage.getItem('orders') || '[]');
       existingOrders.push(orderData);
       localStorage.setItem('orders', JSON.stringify(existingOrders));
-      
-      // Update user coins
-      const userData = JSON.parse(localStorage.getItem('user') || '{}');
-      userData.coins = (userData.coins || 0) - totalCost;
-      localStorage.setItem('user', JSON.stringify(userData));
-      
-      navigate('/order-success', { 
-        state: { 
-          orderId, 
-          product, 
-          totalCoins: totalCost 
-        } 
+
+      // ✅ Update user POINTS in correct storage
+      const loginMethod =
+        localStorage.getItem('loginMethod') || sessionStorage.getItem('loginMethod');
+
+      const storage = loginMethod === 'local' ? localStorage : sessionStorage;
+
+      const rawUser = storage.getItem('user') || '{}';
+      const userData = JSON.parse(rawUser);
+
+      const currentPoints = Number(userData.points ?? userData.coins ?? 0);
+      userData.points = Math.max(0, currentPoints - totalCost);
+
+      storage.setItem('user', JSON.stringify(userData));
+
+      navigate('/order-success', {
+        state: {
+          orderId,
+          product,
+          totalCoins: totalCost,
+        },
       });
-      
+
     } catch (error) {
       console.error('Error placing order:', error);
     } finally {
@@ -151,16 +165,12 @@ const RedeemCheckout: React.FC = () => {
   const renderStepIndicator = () => (
     <div className="step-indicator">
       <div className={`step ${currentStep >= 1 ? 'active' : ''} ${currentStep > 1 ? 'completed' : ''}`}>
-        <div className="step-circle">
-          {currentStep > 1 ? <FaCheck /> : <FaMapMarkerAlt />}
-        </div>
+        <div className="step-circle">{currentStep > 1 ? <FaCheck /> : <FaMapMarkerAlt />}</div>
         <span>Address</span>
       </div>
       <div className="step-line"></div>
       <div className={`step ${currentStep >= 2 ? 'active' : ''} ${currentStep > 2 ? 'completed' : ''}`}>
-        <div className="step-circle">
-          {currentStep > 2 ? <FaCheck /> : <FaTruck />}
-        </div>
+        <div className="step-circle">{currentStep > 2 ? <FaCheck /> : <FaTruck />}</div>
         <span>Delivery</span>
       </div>
       <div className="step-line"></div>
@@ -182,7 +192,7 @@ const RedeemCheckout: React.FC = () => {
           <input
             type="text"
             value={address.fullName}
-            onChange={(e) => setAddress({...address, fullName: e.target.value})}
+            onChange={(e) => setAddress({ ...address, fullName: e.target.value })}
             placeholder="Enter your full name"
             required
           />
@@ -192,7 +202,7 @@ const RedeemCheckout: React.FC = () => {
           <input
             type="tel"
             value={address.phone}
-            onChange={(e) => setAddress({...address, phone: e.target.value})}
+            onChange={(e) => setAddress({ ...address, phone: e.target.value })}
             placeholder="Enter your phone number"
             required
           />
@@ -202,7 +212,7 @@ const RedeemCheckout: React.FC = () => {
           <input
             type="email"
             value={address.email}
-            onChange={(e) => setAddress({...address, email: e.target.value})}
+            onChange={(e) => setAddress({ ...address, email: e.target.value })}
             placeholder="Enter your email address"
           />
         </div>
@@ -210,7 +220,7 @@ const RedeemCheckout: React.FC = () => {
           <label>Address *</label>
           <textarea
             value={address.address}
-            onChange={(e) => setAddress({...address, address: e.target.value})}
+            onChange={(e) => setAddress({ ...address, address: e.target.value })}
             placeholder="Enter your complete address"
             rows={3}
             required
@@ -221,7 +231,7 @@ const RedeemCheckout: React.FC = () => {
           <input
             type="text"
             value={address.city}
-            onChange={(e) => setAddress({...address, city: e.target.value})}
+            onChange={(e) => setAddress({ ...address, city: e.target.value })}
             placeholder="Enter city"
             required
           />
@@ -231,7 +241,7 @@ const RedeemCheckout: React.FC = () => {
           <input
             type="text"
             value={address.state}
-            onChange={(e) => setAddress({...address, state: e.target.value})}
+            onChange={(e) => setAddress({ ...address, state: e.target.value })}
             placeholder="Enter state"
             required
           />
@@ -241,7 +251,7 @@ const RedeemCheckout: React.FC = () => {
           <input
             type="text"
             value={address.pincode}
-            onChange={(e) => setAddress({...address, pincode: e.target.value})}
+            onChange={(e) => setAddress({ ...address, pincode: e.target.value })}
             placeholder="Enter pincode"
             required
           />
@@ -251,7 +261,7 @@ const RedeemCheckout: React.FC = () => {
           <input
             type="text"
             value={address.country}
-            onChange={(e) => setAddress({...address, country: e.target.value})}
+            onChange={(e) => setAddress({ ...address, country: e.target.value })}
             placeholder="Enter country"
           />
         </div>
@@ -314,9 +324,13 @@ const RedeemCheckout: React.FC = () => {
         <div className="delivery-review">
           <h4>Delivery Option</h4>
           <p>
-            {deliveryOption === 'standard' ? 'Standard Delivery (Free)' : 'Express Delivery (25 coins)'}
+            {deliveryOption === 'standard'
+              ? 'Standard Delivery (Free)'
+              : 'Express Delivery (25 coins)'}
             <br />
-            {deliveryOption === 'standard' ? '5-7 business days' : '2-3 business days'}
+            {deliveryOption === 'standard'
+              ? '5-7 business days'
+              : '2-3 business days'}
           </p>
         </div>
       </div>
@@ -347,23 +361,23 @@ const RedeemCheckout: React.FC = () => {
             {/* Navigation Buttons */}
             <div className="checkout-actions">
               {currentStep > 1 && (
-                <button 
-                  className="btn-secondary" 
+                <button
+                  className="btn-secondary"
                   onClick={() => setCurrentStep(currentStep - 1)}
                 >
                   Previous
                 </button>
               )}
               {currentStep < 3 ? (
-                <button 
-                  className="btn-primary" 
+                <button
+                  className="btn-primary"
                   onClick={handleNext}
                   disabled={currentStep === 1 && !validateAddress()}
                 >
                   Next
                 </button>
               ) : (
-                <button 
+                <button
                   className={`btn-primary ${!canAfford ? 'disabled' : ''}`}
                   onClick={handlePlaceOrder}
                   disabled={!canAfford || isLoading}
@@ -375,7 +389,9 @@ const RedeemCheckout: React.FC = () => {
 
             {!canAfford && currentStep === 3 && (
               <div className="insufficient-coins">
-                <p>Insufficient coins! You need {totalCost} coins but have {userCoins} coins.</p>
+                <p>
+                  Insufficient coins! You need {totalCost} coins but have {userCoins} coins.
+                </p>
               </div>
             )}
           </div>
@@ -393,16 +409,28 @@ const RedeemCheckout: React.FC = () => {
             <div className="price-breakdown">
               <div className="price-item">
                 <span>Product Price</span>
-                <span><FaCoins /> {product.price}</span>
+                <span>
+                  <FaCoins /> {product.price}
+                </span>
               </div>
               <div className="price-item">
                 <span>Delivery</span>
-                <span>{deliveryCost === 0 ? 'Free' : <><FaCoins /> {deliveryCost}</>}</span>
+                <span>
+                  {deliveryCost === 0 ? (
+                    'Free'
+                  ) : (
+                    <>
+                      <FaCoins /> {deliveryCost}
+                    </>
+                  )}
+                </span>
               </div>
               <div className="price-divider"></div>
               <div className="price-item total">
                 <span>Total</span>
-                <span><FaCoins /> {totalCost}</span>
+                <span>
+                  <FaCoins /> {totalCost}
+                </span>
               </div>
             </div>
             <div className="coins-info">
@@ -410,7 +438,8 @@ const RedeemCheckout: React.FC = () => {
                 Available Coins: <strong>{userCoins}</strong>
               </div>
               <div className="remaining-coins">
-                After Purchase: <strong>{userCoins - totalCost}</strong>
+                After Purchase:{' '}
+                <strong>{userCoins - totalCost}</strong>
               </div>
             </div>
           </div>
