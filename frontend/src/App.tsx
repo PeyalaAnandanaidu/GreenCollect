@@ -191,20 +191,15 @@ function AppContent() {
               </ProtectedRoute>
             } 
           />
-          <Route 
-            path="/profile" 
-            element={
-              <ProtectedRoute>
-                <Profile
-                  onTabChange={handleTabChange}
-                  activeTab={activeTab}
-                  role={user?.role || 'user'}
-                  onLogout={handleLogout}
-                  user={user}
-                />
-              </ProtectedRoute>
-            } 
-          />
+     <Route 
+  path="/profile" 
+  element={
+    <ProtectedRoute>
+      <Profile onTabChange={handleTabChange} />
+    </ProtectedRoute>
+  } 
+/>
+
 
           {/* User-only Routes */}
           <Route 
