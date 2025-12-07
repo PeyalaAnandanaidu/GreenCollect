@@ -2,7 +2,7 @@ import './Home.css';
 import { FaRecycle, FaLeaf, FaTruck, FaCoins, FaArrowRight, FaUsers, FaChartLine, FaMobileAlt, FaShieldAlt } from 'react-icons/fa';
 import { Typewriter } from 'react-simple-typewriter';
 import { useEffect, useRef, useState } from 'react';
-import DeliveryBuddy3D from '../components/DeliveryBuddy3D';
+
 const Home = () => {
     const [isVisible, setIsVisible] = useState(false);
     const sectionRefs = useRef<(HTMLDivElement | null)[]>([]);
@@ -329,9 +329,7 @@ const Home = () => {
                     </div>
                 </div>
             </section>
-            <section style={{ marginTop: "2rem" }}>
-            <DeliveryBuddy3D />
-        </section>
+            
         </div>
     );
 };

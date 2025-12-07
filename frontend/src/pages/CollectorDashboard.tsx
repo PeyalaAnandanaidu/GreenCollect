@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import './CollectorDashboard.css';
-import DeliveryBuddy3D from '../components/DeliveryBuddy3D';
+
 import { 
     FaTruck, FaCheckCircle, FaMapMarkerAlt, FaClock, 
     FaPhone, FaEnvelope, FaSearch, FaFilter, 
@@ -17,11 +17,11 @@ interface CollectorDashboardProps {
 interface PickupRequest {
     _id: string;
     userId: {
-        _id: string;
-        name: string;
-        email: string;
-        phone: string;
-    };
+        _id: string | null;
+        name: string | null;
+        email: string | null;
+        phone: string | null;
+    } | null;
     pickupAddress: string;
     wasteType: string;
     estimatedWeight: number;
@@ -50,9 +50,18 @@ const CollectorDashboard: React.FC<CollectorDashboardProps> = ({ activeTab, coll
         today: 0
     });
 
+    const today = new Date().toISOString().split('T')[0];
+
+    // Helper: get short user ID safely
+    const getUserShortId = (request: PickupRequest) => {
+        const id = request.userId?._id || request._id;
+        return id ? id.slice(-6) : 'N/A';
+    };
+
     // Fetch pickup requests from API
     useEffect(() => {
         fetchPickupRequests();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [statusFilter]);
 
     // Calculate stats from pickup requests
@@ -89,7 +98,7 @@ const CollectorDashboard: React.FC<CollectorDashboardProps> = ({ activeTab, coll
                 throw new Error(`Failed to fetch requests: ${response.status}`);
             }
 
-            const data = await response.json();
+            const data: PickupRequest[] = await response.json();
             console.log('✅ Fetched requests:', data.length);
             setPickupRequests(data);
         } catch (err) {
@@ -102,7 +111,6 @@ const CollectorDashboard: React.FC<CollectorDashboardProps> = ({ activeTab, coll
     };
 
     const calculateStats = () => {
-        const today = new Date().toISOString().split('T')[0];
         const statsData = {
             total: pickupRequests.length,
             pending: pickupRequests.filter(r => r.status === 'pending').length,
@@ -238,10 +246,12 @@ const CollectorDashboard: React.FC<CollectorDashboardProps> = ({ activeTab, coll
     };
 
     const filteredRequests = pickupRequests.filter(request => {
-        const matchesSearch = 
-            request.userId.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            request.pickupAddress.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            request.wasteType.toLowerCase().includes(searchTerm.toLowerCase());
+        const lowerSearch = searchTerm.toLowerCase();
+
+        const matchesSearch =
+            (request.userId?.name?.toLowerCase().includes(lowerSearch) ?? false) ||
+            request.pickupAddress.toLowerCase().includes(lowerSearch) ||
+            request.wasteType.toLowerCase().includes(lowerSearch);
         
         const matchesStatus = statusFilter === 'all' || request.status === statusFilter;
         const matchesPriority = priorityFilter === 'all' || request.priority === priorityFilter;
@@ -290,8 +300,6 @@ const CollectorDashboard: React.FC<CollectorDashboardProps> = ({ activeTab, coll
             default: return priority;
         }
     };
-
-    const today = new Date().toISOString().split('T')[0];
 
     if (loading && pickupRequests.length === 0) {
         return (
@@ -399,7 +407,7 @@ const CollectorDashboard: React.FC<CollectorDashboardProps> = ({ activeTab, coll
                                     <div className="request-info">
                                         <FaMapMarkerAlt className="request-icon" />
                                         <div>
-                                            <h4>{request.userId.name}</h4>
+                                            <h4>{request.userId?.name || 'Unknown user'}</h4>
                                             <p>{request.pickupAddress}</p>
                                             <span className="request-meta">
                                                 {request.wasteType} • {request.estimatedWeight} kg • {request.pickupTime}
@@ -531,8 +539,10 @@ const CollectorDashboard: React.FC<CollectorDashboardProps> = ({ activeTab, coll
                                         >
                                             <div className="request-header">
                                                 <div className="user-info">
-                                                    <h3>{request.userId.name}</h3>
-                                                    <span className="user-id">ID: {request.userId._id.slice(-6)}</span>
+                                                    <h3>{request.userId?.name || 'Unknown user'}</h3>
+                                                    <span className="user-id">
+                                                        ID: {getUserShortId(request)}
+                                                    </span>
                                                 </div>
                                                 <div className="request-meta">
                                                     <div className={`priority-badge priority-${request.priority}`}>
@@ -584,11 +594,11 @@ const CollectorDashboard: React.FC<CollectorDashboardProps> = ({ activeTab, coll
                                                 <div className="detail-row">
                                                     <div className="detail-item">
                                                         <FaPhone className="detail-icon" />
-                                                        <span>{request.userId.phone || 'Not provided'}</span>
+                                                        <span>{request.userId?.phone || 'Not provided'}</span>
                                                     </div>
                                                     <div className="detail-item">
                                                         <FaEnvelope className="detail-icon" />
-                                                        <span>{request.userId.email}</span>
+                                                        <span>{request.userId?.email || 'Not provided'}</span>
                                                     </div>
                                                 </div>
 
@@ -656,9 +666,7 @@ const CollectorDashboard: React.FC<CollectorDashboardProps> = ({ activeTab, coll
                     </div>
                 )}
             </main>
-            <section style={{ marginTop: "2rem" }}>
-            <DeliveryBuddy3D />
-        </section>
+            
         </div>
     );
 };
