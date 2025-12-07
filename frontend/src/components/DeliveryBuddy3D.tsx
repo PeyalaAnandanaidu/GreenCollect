@@ -4,7 +4,7 @@ import { OrbitControls, useGLTF } from "@react-three/drei";
 import * as THREE from "three";
 
 // adjust path if needed
-const MODEL_PATH = "/delivery-boy.glb";
+const MODEL_PATH = "delivery-boy.glb";
 
 // 🔑 CHANGE 1: Define props for the model to accept dynamic scale
 interface DeliveryModelProps {
