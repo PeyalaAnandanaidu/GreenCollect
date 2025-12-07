@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import './CollectorDashboard.css';
+import DeliveryBuddy3D from '../components/DeliveryBuddy3D';
 import { 
     FaTruck, FaCheckCircle, FaMapMarkerAlt, FaClock, 
     FaPhone, FaEnvelope, FaSearch, FaFilter, 
@@ -655,6 +656,9 @@ const CollectorDashboard: React.FC<CollectorDashboardProps> = ({ activeTab, coll
                     </div>
                 )}
             </main>
+            <section style={{ marginTop: "2rem" }}>
+            <DeliveryBuddy3D />
+        </section>
         </div>
     );
 };
