@@ -189,7 +189,17 @@ const UserDashboard: React.FC<UserDashboardProps> = ({ activeTab, onTabChange })
             
             if (data.success && data.leaderboard) {
                 console.log(`📊 Leaderboard has ${data.leaderboard.length} users`);
-                setLeaderboard(data.leaderboard);
+                // Filter out users without names and ensure they have all required fields
+                const validUsers = data.leaderboard.filter((u: any) => u.name && u.name.trim() !== '');
+                console.log(`✅ Valid users with names: ${validUsers.length}`);
+                
+                // Sort by points in descending order (highest coins first)
+                const sortedUsers = validUsers.sort((a: LeaderboardUser, b: LeaderboardUser) => {
+                    return b.points - a.points;
+                });
+                console.log('🔢 Top 3 users by coins:', sortedUsers.slice(0, 3).map((u: LeaderboardUser) => `${u.name}: ${u.points}`));
+                
+                setLeaderboard(sortedUsers);
             } else {
                 console.warn('⚠️ Leaderboard response format unexpected:', data);
             }
@@ -1130,11 +1140,11 @@ const UserDashboard: React.FC<UserDashboardProps> = ({ activeTab, onTabChange })
                                                     <td>
                                                         <div className="user-cell">
                                                             <div className="user-avatar-small">
-                                                                {leaderboardUser.name.charAt(0).toUpperCase()}
+                                                                {(leaderboardUser.name || 'U').charAt(0).toUpperCase()}
                                                             </div>
                                                             <div className="user-info-small">
                                                                 <span className="user-name-small">
-                                                                    {leaderboardUser.name}
+                                                                    {leaderboardUser.name || 'Unknown User'}
                                                                     {user && leaderboardUser._id === user.id && (
                                                                         <span className="you-badge">You</span>
                                                                     )}
