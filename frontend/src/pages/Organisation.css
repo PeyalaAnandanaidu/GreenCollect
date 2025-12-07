@@ -1,0 +1,42 @@
+/* Basic styling for Organisation page */
+.organisation-page {
+  padding: 24px;
+  max-width: 900px;
+  margin: 0 auto;
+  color: #eaeaea;
+}
+.organisation-page .page-header h1 {
+  margin: 0 0 6px 0;
+}
+.organisation-page .page-header p {
+  margin: 0 0 18px 0;
+  color: #bfc6c6;
+}
+.org-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.org-form label {
+  font-size: 0.9rem;
+  color: #cfd8d8;
+}
+.org-form input,
+.org-form select,
+.org-form textarea {
+  padding: 10px;
+  border-radius: 6px;
+  border: 1px solid #333;
+  background: #0b0b0b;
+  color: #fff;
+}
+.org-form textarea { min-height: 100px; }
+.form-actions {
+  display:flex;
+  gap:10px;
+  margin-top:8px;
+}
+.form-message {
+  margin-top:12px;
+  color: #ffd56b;
+}

@@ -15,6 +15,7 @@ import {
 } from 'recharts';
 import SchedulePickup from './SchedulePickup';
 import SustainableProducts from './SustainableProducts';
+import Cart from './Cart';
 
 interface UserDashboardProps {
     activeTab: string;
@@ -994,6 +995,9 @@ const UserDashboard: React.FC<UserDashboardProps> = ({ activeTab, onTabChange })
                 {/* Sustainable Products Tab */}
                 {activeTab === 'products' && (
                     <SustainableProducts userCoins={user?.points || 0} />
+                )}
+                {activeTab === 'cart' && (
+                    <Cart />
                 )}
             </main>
         </div>
