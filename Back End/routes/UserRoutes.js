@@ -62,4 +62,22 @@ router.patch('/:id/coins', async (req, res) => {
       res.status(500).json({ message: 'Server error' });
     }
   });
+
+// ✅ Route to get leaderboard - all users sorted by coins (descending)
+router.get('/leaderboard', async (req, res) => {
+    try {
+      const users = await User.find({ role: 'user' })
+        .select('name email points')
+        .sort({ points: -1 }); // Sort by points in descending order
+  
+      res.json({
+        success: true,
+        leaderboard: users
+      });
+    } catch (error) {
+      console.error('Error fetching leaderboard:', error);
+      res.status(500).json({ message: 'Server error', error: error.message });
+    }
+  });
+
 module.exports = router;

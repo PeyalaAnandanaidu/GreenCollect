@@ -7,7 +7,7 @@ import {
     FaTimesCircle, FaTruck as FaTruckIcon,
     FaTools, FaLeaf, FaCoins, FaChartLine,
     FaBolt, FaShieldAlt, FaRocket, FaStar,
-    FaSpinner, FaUser, FaEnvelope
+    FaSpinner, FaUser, FaEnvelope, FaTimes
 } from 'react-icons/fa';
 import {
     XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
@@ -45,6 +45,13 @@ interface ChartData {
     efficiencyData: Array<{ category: string; efficiency: number; target: number }>;
 }
 
+interface LeaderboardUser {
+    _id: string;
+    name: string;
+    email: string;
+    points: number;
+}
+
 const UserDashboard: React.FC<UserDashboardProps> = ({ activeTab, onTabChange }) => {
     const [showSchedulePickup, setShowSchedulePickup] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
@@ -64,6 +71,10 @@ const UserDashboard: React.FC<UserDashboardProps> = ({ activeTab, onTabChange })
         wasteTypesData: [],
         efficiencyData: []
     });
+    const [leaderboard, setLeaderboard] = useState<LeaderboardUser[]>([]);
+    const [leaderboardLoading, setLeaderboardLoading] = useState(false);
+    const [selectedUser, setSelectedUser] = useState<LeaderboardUser | null>(null);
+    const [showUserModal, setShowUserModal] = useState(false);
 
     // Load user data from storage
     useEffect(() => {
@@ -93,6 +104,9 @@ const UserDashboard: React.FC<UserDashboardProps> = ({ activeTab, onTabChange })
     useEffect(() => {
         if (activeTab === 'status' || activeTab === 'overview') {
             fetchUserPickups();
+        }
+        if (activeTab === 'leaderboard') {
+            fetchLeaderboard();
         }
     }, [activeTab]);
 
@@ -142,6 +156,54 @@ const UserDashboard: React.FC<UserDashboardProps> = ({ activeTab, onTabChange })
         } finally {
             setLoading(false);
         }
+    };
+
+    const fetchLeaderboard = async () => {
+        try {
+            setLeaderboardLoading(true);
+            const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+            
+            if (!token) {
+                console.log('No token found for leaderboard');
+                return;
+            }
+
+            console.log('🔄 Fetching leaderboard from backend...');
+            const response = await fetch('https://greencollect.onrender.com/api/users/leaderboard', {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            console.log('📡 Leaderboard response status:', response.status);
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                console.error('❌ Leaderboard error response:', errorText);
+                throw new Error(`Failed to fetch leaderboard: ${response.status} - ${errorText}`);
+            }
+
+            const data = await response.json();
+            console.log('✅ Leaderboard data received:', data);
+            
+            if (data.success && data.leaderboard) {
+                console.log(`📊 Leaderboard has ${data.leaderboard.length} users`);
+                setLeaderboard(data.leaderboard);
+            } else {
+                console.warn('⚠️ Leaderboard response format unexpected:', data);
+            }
+        } catch (err: any) {
+            console.error('❌ Error fetching leaderboard:', err);
+            console.error('Error details:', err.message);
+        } finally {
+            setLeaderboardLoading(false);
+        }
+    };
+
+    const handleUserClick = (leaderboardUser: LeaderboardUser) => {
+        setSelectedUser(leaderboardUser);
+        setShowUserModal(true);
     };
 
     // Generate chart data from real pickup data
@@ -706,12 +768,14 @@ const UserDashboard: React.FC<UserDashboardProps> = ({ activeTab, onTabChange })
                         {activeTab === 'bookings' && 'Schedule Pickup'}
                         {activeTab === 'status' && 'Track Your Pickups'}
                         {activeTab === 'products' && 'Eco Rewards Store'}
+                        {activeTab === 'leaderboard' && 'Leaderboard Rankings'}
                     </h1>
                     <p className="page-subtitle">
                         {activeTab === 'overview' && 'Monitor your sustainable impact and eco-rewards progress'}
                         {activeTab === 'bookings' && 'Schedule waste collection and manage your pickup requests'}
                         {activeTab === 'status' && 'Track your waste pickup orders in real-time'}
                         {activeTab === 'products' && 'Redeem your earned eco-coins for sustainable products'}
+                        {activeTab === 'leaderboard' && 'See how you rank among all eco-warriors'}
                     </p>
                 </div>
 
@@ -995,7 +1059,162 @@ const UserDashboard: React.FC<UserDashboardProps> = ({ activeTab, onTabChange })
                 {activeTab === 'products' && (
                     <SustainableProducts userCoins={user?.points || 0} />
                 )}
+
+                {/* Leaderboard Tab */}
+                {activeTab === 'leaderboard' && (
+                    <div className="tab-content">
+                        <div className="leaderboard-container">
+                            <div className="leaderboard-header">
+                                <div className="leaderboard-title-section">
+                                    <FaStar className="leaderboard-icon" />
+                                    <div>
+                                        <h2>Top Eco-Warriors</h2>
+                                        <p>See how you rank among all users in the Green ecosystem</p>
+                                    </div>
+                                </div>
+                                <div className="current-user-rank">
+                                    {user && (
+                                        <>
+                                            <span className="rank-label">Your Rank:</span>
+                                            <span className="rank-value">
+                                                #{leaderboard.findIndex(u => u._id === user.id) + 1 || 'N/A'}
+                                            </span>
+                                        </>
+                                    )}
+                                </div>
+                            </div>
+
+                            {leaderboardLoading ? (
+                                <div className="loading-state">
+                                    <FaSpinner className="spinner" />
+                                    <p>Loading leaderboard...</p>
+                                </div>
+                            ) : leaderboard.length === 0 ? (
+                                <div className="empty-state">
+                                    <FaStar className="empty-icon" />
+                                    <h3>No Rankings Yet</h3>
+                                    <p>Be the first to earn coins and climb the leaderboard!</p>
+                                </div>
+                            ) : (
+                                <div className="leaderboard-table-container">
+                                    <table className="leaderboard-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Rank</th>
+                                                <th>User</th>
+                                                <th>Coins</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {leaderboard.map((leaderboardUser, index) => (
+                                                <tr
+                                                    key={leaderboardUser._id}
+                                                    className={`leaderboard-row ${
+                                                        user && leaderboardUser._id === user.id ? 'current-user' : ''
+                                                    } ${index < 3 ? `top-${index + 1}` : ''}`}
+                                                    onClick={() => handleUserClick(leaderboardUser)}
+                                                >
+                                                    <td>
+                                                        <div className="rank-cell">
+                                                            {index < 3 ? (
+                                                                <div className={`medal medal-${index + 1}`}>
+                                                                    {index === 0 && '🥇'}
+                                                                    {index === 1 && '🥈'}
+                                                                    {index === 2 && '🥉'}
+                                                                </div>
+                                                            ) : (
+                                                                <span className="rank-number">#{index + 1}</span>
+                                                            )}
+                                                        </div>
+                                                    </td>
+                                                    <td>
+                                                        <div className="user-cell">
+                                                            <div className="user-avatar-small">
+                                                                {leaderboardUser.name.charAt(0).toUpperCase()}
+                                                            </div>
+                                                            <div className="user-info-small">
+                                                                <span className="user-name-small">
+                                                                    {leaderboardUser.name}
+                                                                    {user && leaderboardUser._id === user.id && (
+                                                                        <span className="you-badge">You</span>
+                                                                    )}
+                                                                </span>
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                    <td>
+                                                        <div className="coins-cell">
+                                                            <FaCoins className="coins-icon-small" />
+                                                            <span className="coins-amount-small">
+                                                                {leaderboardUser.points.toLocaleString()}
+                                                            </span>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                )}
             </main>
+
+            {/* User Details Modal */}
+            {showUserModal && selectedUser && (
+                <div className="modal-overlay" onClick={() => setShowUserModal(false)}>
+                    <div className="user-details-modal" onClick={(e) => e.stopPropagation()}>
+                        <button 
+                            className="modal-close-btn" 
+                            onClick={() => setShowUserModal(false)}
+                        >
+                            <FaTimes />
+                        </button>
+                        <div className="modal-header">
+                            <div className="modal-user-avatar">
+                                {selectedUser.name.charAt(0).toUpperCase()}
+                            </div>
+                            <div className="modal-rank-badge">
+                                #{leaderboard.findIndex(u => u._id === selectedUser._id) + 1}
+                            </div>
+                        </div>
+                        <div className="modal-content">
+                            <h2 className="modal-user-name">{selectedUser.name}</h2>
+                            <div className="modal-user-email">
+                                <FaEnvelope className="email-icon" />
+                                {selectedUser.email}
+                            </div>
+                            <div className="modal-stats">
+                                <div className="modal-stat-card">
+                                    <FaCoins className="modal-stat-icon coins" />
+                                    <div className="modal-stat-info">
+                                        <span className="modal-stat-label">Total Coins</span>
+                                        <span className="modal-stat-value">
+                                            {selectedUser.points.toLocaleString()}
+                                        </span>
+                                    </div>
+                                </div>
+                                <div className="modal-stat-card">
+                                    <FaStar className="modal-stat-icon rank" />
+                                    <div className="modal-stat-info">
+                                        <span className="modal-stat-label">Leaderboard Rank</span>
+                                        <span className="modal-stat-value">
+                                            #{leaderboard.findIndex(u => u._id === selectedUser._id) + 1}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                            {user && selectedUser._id === user.id && (
+                                <div className="modal-user-badge">
+                                    <FaCheckCircle className="badge-icon" />
+                                    This is you!
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

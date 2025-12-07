@@ -15,6 +15,7 @@ import {
   FaHandshake,
   FaStore,
   FaCartArrowDown,
+  FaTrophy,
 } from 'react-icons/fa';
 import './Navbar.css';
 
@@ -539,6 +540,18 @@ const Navbar: React.FC<NavbarProps> = ({
                 >
                   <FaCartArrowDown className="mobile-menu-item-icon" />
                   <span>Eco Store ({getUserPoints()} coins)</span>
+                </button>
+
+                <button
+                  className={`mobile-menu-item ${activeTab === 'leaderboard' ? 'active' : ''}`}
+                  onClick={() => {
+                    onTabChange('leaderboard');
+                    navigate('/dashboard');
+                    onMenuToggle();
+                  }}
+                >
+                  <FaTrophy className="mobile-menu-item-icon" />
+                  <span>Leaderboard</span>
                 </button>
               </>
             )}
