@@ -1087,7 +1087,7 @@ const UserDashboard: React.FC<UserDashboardProps> = ({ activeTab, onTabChange })
                                         <>
                                             <span className="rank-label">Your Rank:</span>
                                             <span className="rank-value">
-                                                #{leaderboard.findIndex(u => u._id === user.id) + 1 || 'N/A'}
+                                                {leaderboard.findIndex(u => u._id === user.id) + 1 || 'N/A'}
                                             </span>
                                         </>
                                     )}
@@ -1133,7 +1133,7 @@ const UserDashboard: React.FC<UserDashboardProps> = ({ activeTab, onTabChange })
                                                                     {index === 2 && '🥉'}
                                                                 </div>
                                                             ) : (
-                                                                <span className="rank-number">#{index + 1}</span>
+                                                                <span className="rank-number">{index + 1}</span>
                                                             )}
                                                         </div>
                                                     </td>
@@ -1186,7 +1186,7 @@ const UserDashboard: React.FC<UserDashboardProps> = ({ activeTab, onTabChange })
                                 {selectedUser.name.charAt(0).toUpperCase()}
                             </div>
                             <div className="modal-rank-badge">
-                                #{leaderboard.findIndex(u => u._id === selectedUser._id) + 1}
+                                {leaderboard.findIndex(u => u._id === selectedUser._id) + 1}
                             </div>
                         </div>
                         <div className="modal-content">
@@ -1210,7 +1210,7 @@ const UserDashboard: React.FC<UserDashboardProps> = ({ activeTab, onTabChange })
                                     <div className="modal-stat-info">
                                         <span className="modal-stat-label">Leaderboard Rank</span>
                                         <span className="modal-stat-value">
-                                            #{leaderboard.findIndex(u => u._id === selectedUser._id) + 1}
+                                            {leaderboard.findIndex(u => u._id === selectedUser._id) + 1}
                                         </span>
                                     </div>
                                 </div>

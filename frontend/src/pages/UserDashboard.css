@@ -760,21 +760,23 @@
 /* ==================== LEADERBOARD STYLES ==================== */
 
 .leaderboard-container {
-    background: #ffffff;
+    background: linear-gradient(135deg, #1a1a1a 0%, #0a0a0a 100%);
     border-radius: 16px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    box-shadow: 0 4px 20px rgba(255, 215, 0, 0.3);
     overflow: hidden;
+    border: 1px solid rgba(255, 215, 0, 0.2);
 }
 
 .leaderboard-header {
-    background: linear-gradient(135deg, #2d5a27, #4caf50);
-    color: white;
+    background: linear-gradient(135deg, #000000, #1a1a1a);
+    color: #ffd700;
     padding: 30px;
     display: flex;
     justify-content: space-between;
     align-items: center;
     flex-wrap: wrap;
     gap: 20px;
+    border-bottom: 2px solid #ffd700;
 }
 
 .leaderboard-title-section {
@@ -793,36 +795,40 @@
     font-size: 2rem;
     margin: 0 0 5px 0;
     font-weight: 700;
+    color: #ffd700;
+    text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
 }
 
 .leaderboard-title-section p {
     margin: 0;
     opacity: 0.9;
     font-size: 0.95rem;
+    color: #ffcc00;
 }
 
 .current-user-rank {
-    background: rgba(255, 255, 255, 0.15);
+    background: rgba(255, 215, 0, 0.15);
     backdrop-filter: blur(10px);
     padding: 15px 25px;
     border-radius: 12px;
     display: flex;
     align-items: center;
     gap: 12px;
-    border: 2px solid rgba(255, 255, 255, 0.3);
+    border: 2px solid #ffd700;
 }
 
 .rank-label {
     font-size: 0.95rem;
     opacity: 0.9;
     font-weight: 500;
+    color: #ffcc00;
 }
 
 .rank-value {
     font-size: 1.8rem;
     font-weight: 700;
     color: #ffd700;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    text-shadow: 0 0 15px rgba(255, 215, 0, 0.8);
 }
 
 .leaderboard-table-container {
@@ -841,11 +847,12 @@
     padding: 15px 20px;
     font-size: 0.9rem;
     font-weight: 600;
-    color: #666;
+    color: #ffd700;
     text-transform: uppercase;
     letter-spacing: 0.5px;
-    background: #f8f9fa;
+    background: #0a0a0a;
     border: none;
+    text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
 }
 
 .leaderboard-table thead th:first-child {
@@ -859,7 +866,7 @@
 }
 
 .leaderboard-row {
-    background: #ffffff;
+    background: linear-gradient(135deg, #1a1a1a 0%, #0f0f0f 100%);
     transition: all 0.3s ease;
     cursor: pointer;
     border-radius: 12px;
@@ -867,68 +874,81 @@
 
 .leaderboard-row:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 15px rgba(45, 90, 39, 0.15);
+    box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
+    background: linear-gradient(135deg, #2a2a2a 0%, #1a1a1a 100%);
 }
 
 .leaderboard-row td {
     padding: 18px 20px;
-    border-top: 1px solid #e9ecef;
-    border-bottom: 1px solid #e9ecef;
-    background: #ffffff;
+    border-top: 1px solid rgba(255, 215, 0, 0.1);
+    border-bottom: 1px solid rgba(255, 215, 0, 0.1);
+    background: transparent;
+    color: #ffcc00;
 }
 
 .leaderboard-row td:first-child {
-    border-left: 1px solid #e9ecef;
+    border-left: 1px solid rgba(255, 215, 0, 0.1);
     border-radius: 12px 0 0 12px;
     padding-left: 30px;
 }
 
 .leaderboard-row td:last-child {
-    border-right: 1px solid #e9ecef;
+    border-right: 1px solid rgba(255, 215, 0, 0.1);
     border-radius: 0 12px 12px 0;
     padding-right: 30px;
 }
 
 /* Top 3 users styling */
 .leaderboard-row.top-1 {
-    background: linear-gradient(135deg, #fff9e6 0%, #ffffff 100%);
+    background: linear-gradient(135deg, #2a2200 0%, #1a1500 100%);
     border: 2px solid #ffd700;
+    box-shadow: 0 0 20px rgba(255, 215, 0, 0.4);
 }
 
 .leaderboard-row.top-1 td {
     background: transparent;
     border-color: rgba(255, 215, 0, 0.3);
+    color: #ffd700;
+    font-weight: 600;
 }
 
 .leaderboard-row.top-2 {
-    background: linear-gradient(135deg, #f5f5f5 0%, #ffffff 100%);
+    background: linear-gradient(135deg, #2a2a2a 0%, #1a1a1a 100%);
     border: 2px solid #c0c0c0;
+    box-shadow: 0 0 15px rgba(192, 192, 192, 0.3);
 }
 
 .leaderboard-row.top-2 td {
     background: transparent;
     border-color: rgba(192, 192, 192, 0.3);
+    color: #e0e0e0;
+    font-weight: 600;
 }
 
 .leaderboard-row.top-3 {
-    background: linear-gradient(135deg, #fff3e6 0%, #ffffff 100%);
+    background: linear-gradient(135deg, #2a1a00 0%, #1a1000 100%);
     border: 2px solid #cd7f32;
+    box-shadow: 0 0 15px rgba(205, 127, 50, 0.3);
 }
 
 .leaderboard-row.top-3 td {
     background: transparent;
     border-color: rgba(205, 127, 50, 0.3);
+    color: #cd7f32;
+    font-weight: 600;
 }
 
 /* Current user highlight */
 .leaderboard-row.current-user {
-    background: linear-gradient(135deg, #e8f5e9 0%, #ffffff 100%);
-    border: 2px solid #4caf50;
+    background: linear-gradient(135deg, #2a2200 0%, #1a1500 100%);
+    border: 2px solid #ffd700;
+    box-shadow: 0 0 25px rgba(255, 215, 0, 0.5);
 }
 
 .leaderboard-row.current-user td {
     background: transparent;
-    border-color: rgba(76, 175, 80, 0.3);
+    border-color: rgba(255, 215, 0, 0.4);
+    color: #ffd700;
 }
 
 .rank-cell {
@@ -968,14 +988,16 @@
 .rank-number {
     font-size: 1.3rem;
     font-weight: 700;
-    color: #666;
-    background: #f8f9fa;
+    color: #ffd700;
+    background: #0a0a0a;
     width: 40px;
     height: 40px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
+    border: 2px solid #ffd700;
+    box-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
 }
 
 .user-cell {
@@ -988,15 +1010,16 @@
     width: 50px;
     height: 50px;
     border-radius: 50%;
-    background: linear-gradient(135deg, #2d5a27, #4caf50);
-    color: white;
+    background: linear-gradient(135deg, #ffd700, #ffaa00);
+    color: #000000;
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 1.3rem;
     font-weight: 700;
     flex-shrink: 0;
-    box-shadow: 0 2px 8px rgba(45, 90, 39, 0.3);
+    box-shadow: 0 2px 8px rgba(255, 215, 0, 0.5);
+    border: 2px solid #ffcc00;
 }
 
 .user-info-small {
@@ -1007,21 +1030,22 @@
 .user-name-small {
     font-size: 1.05rem;
     font-weight: 600;
-    color: #333;
+    color: #ffcc00;
     display: flex;
     align-items: center;
     gap: 10px;
 }
 
 .you-badge {
-    background: #4caf50;
-    color: white;
+    background: #ffd700;
+    color: #000000;
     font-size: 0.75rem;
     padding: 3px 10px;
     border-radius: 12px;
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.5px;
+    box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
 }
 
 .coins-cell {
@@ -1030,16 +1054,18 @@
     gap: 8px;
     font-size: 1.2rem;
     font-weight: 700;
-    color: #2d5a27;
+    color: #ffd700;
 }
 
 .coins-icon-small {
     color: #ffd700;
     font-size: 1.3rem;
+    filter: drop-shadow(0 0 5px rgba(255, 215, 0, 0.5));
 }
 
 .coins-amount-small {
     font-feature-settings: "tnum";
+    text-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
 }
 
 /* User Details Modal */
@@ -1049,7 +1075,7 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background: rgba(0, 0, 0, 0.6);
+    background: rgba(0, 0, 0, 0.85);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1068,14 +1094,15 @@
 }
 
 .user-details-modal {
-    background: white;
+    background: linear-gradient(135deg, #1a1a1a 0%, #0a0a0a 100%);
     border-radius: 20px;
     max-width: 500px;
     width: 100%;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 10px 40px rgba(255, 215, 0, 0.3);
     position: relative;
     animation: slideUp 0.3s ease;
     overflow: hidden;
+    border: 2px solid #ffd700;
 }
 
 @keyframes slideUp {
@@ -1093,8 +1120,8 @@
     position: absolute;
     top: 15px;
     right: 15px;
-    background: rgba(0, 0, 0, 0.1);
-    border: none;
+    background: rgba(255, 215, 0, 0.2);
+    border: 2px solid #ffd700;
     width: 40px;
     height: 40px;
     border-radius: 50%;
@@ -1104,60 +1131,64 @@
     cursor: pointer;
     z-index: 10;
     transition: all 0.3s ease;
-    color: white;
+    color: #ffd700;
     font-size: 1.2rem;
 }
 
 .modal-close-btn:hover {
-    background: rgba(0, 0, 0, 0.2);
+    background: rgba(255, 215, 0, 0.3);
     transform: rotate(90deg);
+    box-shadow: 0 0 15px rgba(255, 215, 0, 0.5);
 }
 
 .modal-header {
-    background: linear-gradient(135deg, #2d5a27, #4caf50);
+    background: linear-gradient(135deg, #000000, #1a1a1a);
     padding: 40px 30px;
     display: flex;
     flex-direction: column;
     align-items: center;
     position: relative;
+    border-bottom: 2px solid #ffd700;
 }
 
 .modal-user-avatar {
     width: 100px;
     height: 100px;
     border-radius: 50%;
-    background: white;
-    color: #2d5a27;
+    background: linear-gradient(135deg, #ffd700, #ffaa00);
+    color: #000000;
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 3rem;
     font-weight: 700;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-    border: 4px solid white;
+    box-shadow: 0 4px 20px rgba(255, 215, 0, 0.5);
+    border: 4px solid #ffcc00;
     margin-bottom: 15px;
 }
 
 .modal-rank-badge {
     background: #ffd700;
-    color: #2d5a27;
+    color: #000000;
     padding: 8px 20px;
     border-radius: 20px;
     font-size: 1.1rem;
     font-weight: 700;
-    box-shadow: 0 2px 10px rgba(255, 215, 0, 0.5);
+    box-shadow: 0 0 20px rgba(255, 215, 0, 0.6);
 }
 
 .modal-content {
     padding: 30px;
+    background: #0a0a0a;
 }
 
 .modal-user-name {
     font-size: 1.8rem;
     font-weight: 700;
-    color: #333;
+    color: #ffd700;
     margin: 0 0 10px 0;
     text-align: center;
+    text-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
 }
 
 .modal-user-email {
@@ -1165,13 +1196,13 @@
     align-items: center;
     justify-content: center;
     gap: 8px;
-    color: #666;
+    color: #ffcc00;
     font-size: 0.95rem;
     margin-bottom: 30px;
 }
 
 .email-icon {
-    color: #4caf50;
+    color: #ffd700;
 }
 
 .modal-stats {
@@ -1182,20 +1213,20 @@
 }
 
 .modal-stat-card {
-    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    background: linear-gradient(135deg, #1a1a1a 0%, #0f0f0f 100%);
     padding: 20px;
     border-radius: 12px;
     display: flex;
     align-items: center;
     gap: 15px;
-    border: 2px solid transparent;
+    border: 2px solid rgba(255, 215, 0, 0.3);
     transition: all 0.3s ease;
 }
 
 .modal-stat-card:hover {
-    border-color: #4caf50;
+    border-color: #ffd700;
     transform: translateY(-2px);
-    box-shadow: 0 4px 15px rgba(76, 175, 80, 0.2);
+    box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4);
 }
 
 .modal-stat-icon {
@@ -1204,10 +1235,12 @@
 
 .modal-stat-icon.coins {
     color: #ffd700;
+    filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.5));
 }
 
 .modal-stat-icon.rank {
-    color: #4caf50;
+    color: #ffd700;
+    filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.5));
 }
 
 .modal-stat-info {
@@ -1217,19 +1250,20 @@
 
 .modal-stat-label {
     font-size: 0.85rem;
-    color: #666;
+    color: #ffcc00;
     margin-bottom: 5px;
 }
 
 .modal-stat-value {
     font-size: 1.5rem;
     font-weight: 700;
-    color: #333;
+    color: #ffd700;
+    text-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
 }
 
 .modal-user-badge {
-    background: linear-gradient(135deg, #4caf50, #2d5a27);
-    color: white;
+    background: linear-gradient(135deg, #ffd700, #ffaa00);
+    color: #000000;
     padding: 15px;
     border-radius: 12px;
     display: flex;
@@ -1238,10 +1272,13 @@
     gap: 10px;
     font-weight: 600;
     font-size: 1rem;
+    box-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+    border: 2px solid #ffcc00;
 }
 
 .badge-icon {
     font-size: 1.3rem;
+    filter: drop-shadow(0 0 5px rgba(0, 0, 0, 0.3));
 }
 
 /* Responsive Leaderboard */
