@@ -41,7 +41,7 @@ const Organisation: React.FC = () => {
       };
 
       const API_BASE = (import.meta as any).env?.VITE_API_BASE || 'http://localhost:4000';
-      const res = await fetch(`https://greencollect.onrender.com/api/waste-requests/organisation`, {
+      const res = await fetch(`${API_BASE.replace(/\/$/, '')}/api/waste-requests/organisation`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
