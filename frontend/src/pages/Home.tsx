@@ -53,7 +53,7 @@ const Home = () => {
                     <h1 className="hero-title">జనతాGarage</h1>
                     <h2 className="hero-subtitle">
                         <Typewriter
-                            words={[ 'ఇచట ప్రకృతి కాపాడబడును']}
+                            words={[ 'ఇచట ప్రకృతి కాపాడబడును', 'ಇಲ್ಲಿ ಪ್ರಕೃತಿಯನ್ನು ಸಂರಕ್ಷಿಸಲಾಗಿದೆ', 'Here Nature is Preserved', 'यहाँ प्रकृति संरक्षित है'] }
                             loop={0}
                             cursor
                             cursorStyle="|"

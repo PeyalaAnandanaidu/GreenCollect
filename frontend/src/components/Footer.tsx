@@ -10,9 +10,9 @@ const Footer = () => {
 
           {/* About Section */}
           <div className="col-md-3 mb-4">
-            <h5 className="fw-bold mb-3">About GreenCollect</h5>
+            <h5 className="fw-bold mb-3">About JanathaGarage</h5>
             <p>
-              GreenCollect is a smart waste collection & rewards platform connecting households,
+              JanathaGarage is a smart waste collection & rewards platform connecting households,
               collectors, and recycling centers. Contribute to a cleaner planet while earning rewards.
             </p>
           </div>
@@ -31,7 +31,7 @@ const Footer = () => {
           {/* Contact Section */}
           <div className="col-md-3 mb-4">
             <h5 className="fw-bold mb-3">Contact Us</h5>
-            <p>Email: support@greencollect.com</p>
+            <p>Email: support@janathagarage.com</p>
             <p>Phone: +91 123 456 7890</p>
             <p>Address: RGUKT RK Valley, Andhra Pradesh</p>
           </div>
@@ -42,7 +42,7 @@ const Footer = () => {
             <div className="d-flex gap-3">
               <a href="#" className="footer-social"><FaFacebook /></a>
               <a href="#" className="footer-social"><FaTwitter /></a>
-              <a href="#" className="footer-social"><FaInstagram /></a>
+              <a href="https://www.instagram.com/janatha_garage2k25/" className="footer-social"><FaInstagram /></a>
               <a href="#" className="footer-social"><FaLinkedin /></a>
             </div>
           </div>
@@ -52,7 +52,7 @@ const Footer = () => {
         <hr className="bg-secondary" />
 
         <div className="text-center py-3">
-          &copy; 2025 GreenCollect. All rights reserved.
+          &copy; 2025 JanathaGarage. All rights reserved.
         </div>
       </div>
     </footer>
