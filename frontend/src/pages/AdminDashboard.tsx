@@ -150,11 +150,14 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ activeTab }) => {
 
     const handleApproveRequest = async (requestId: string) => {
         try {
-            const response = await fetch(`https://greencollect.onrender.com/api/admin/approve-collector/${requestId}`, {
-                method: 'POST',
+            const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+            const response = await fetch(`https://greencollect.onrender.com/api/users/approve-collector/${requestId}`, {
+                method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
                 },
+                body: JSON.stringify({ isApproved: true })
             });
 
             if (response.ok) {
@@ -165,34 +168,43 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ activeTab }) => {
                             : request
                     )
                 );
-                console.log(`Approved collector request: ${requestId}`);
+                console.log(`✅ Approved collector request: ${requestId}`);
             } else {
-                console.error('Failed to approve collector');
+                const errorData = await response.json();
+                console.error('Failed to approve collector:', errorData);
+                alert(`Failed to approve collector: ${errorData.message || 'Unknown error'}`);
             }
         } catch (error) {
             console.error('Error approving collector:', error);
+            alert('Network error while approving collector. Please try again.');
         }
     };
 
     const handleRejectRequest = async (requestId: string) => {
         try {
-            const response = await fetch(`https://greencollect.onrender.com/api/admin/reject-collector/${requestId}`, {
-                method: 'POST',
+            const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+            const response = await fetch(`https://greencollect.onrender.com/api/users/approve-collector/${requestId}`, {
+                method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
                 },
+                body: JSON.stringify({ isApproved: false })
             });
 
             if (response.ok) {
                 setCollectorRequests(prev => 
                     prev.filter(request => request.id !== requestId)
                 );
-                console.log(`Rejected collector request: ${requestId}`);
+                console.log(`✅ Rejected collector request: ${requestId}`);
             } else {
-                console.error('Failed to reject collector');
+                const errorData = await response.json();
+                console.error('Failed to reject collector:', errorData);
+                alert(`Failed to reject collector: ${errorData.message || 'Unknown error'}`);
             }
         } catch (error) {
             console.error('Error rejecting collector:', error);
+            alert('Network error while rejecting collector. Please try again.');
         }
     };
 

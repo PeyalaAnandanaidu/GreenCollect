@@ -130,7 +130,7 @@ const Navbar: React.FC<NavbarProps> = ({
         if (!token || !user) return;
 
         // Fetch updated user data to get latest coins
-        const response = await fetch('http://localhost:4000/api/auth/me', {
+        const response = await fetch('https://greencollect.onrender.com/api/auth/me', {
           headers: {
             'Authorization': `Bearer ${token}`,
           },
