@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { useState } from 'react';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { CartProvider } from './contexts/CartContext';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import ElevenLabsEmbed from './components/ElevenLabsEmbed';
@@ -12,6 +13,8 @@ import Dashboard from './pages/Dashboard';
 import StatusPage from './pages/StatusPage';
 import RedeemCheckout from './pages/RedeemCheckout';
 import OrderSuccess from './pages/OrderSuccess';
+import Organisation from './pages/Organisation';
+import Cart from './pages/Cart';
 
 // Protected Route Component
 interface ProtectedRouteProps {
@@ -191,6 +194,14 @@ function AppContent() {
               </ProtectedRoute>
             } 
           />
+          <Route
+            path="/organisation"
+            element={
+              <UserRoute>
+                <Organisation />
+              </UserRoute>
+            }
+          />
      <Route 
   path="/profile" 
   element={
@@ -220,6 +231,14 @@ function AppContent() {
                 <RedeemCheckout />
               </UserRoute>
             } 
+          />
+          <Route
+            path="/cart"
+            element={
+              <UserRoute>
+                <Cart />
+              </UserRoute>
+            }
           />
           <Route 
             path="/order-success" 
@@ -267,7 +286,9 @@ function AppContent() {
 function App() {
   return (
     <AuthProvider>
-      <AppContent />
+      <CartProvider>
+        <AppContent />
+      </CartProvider>
     </AuthProvider>
   );
 }

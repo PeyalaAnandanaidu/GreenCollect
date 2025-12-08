@@ -18,6 +18,7 @@ import {
   FaTrophy,
 } from 'react-icons/fa';
 import './Navbar.css';
+import { useCart } from '../contexts/CartContext';
 
 interface User {
   id: string;
@@ -64,6 +65,13 @@ const Navbar: React.FC<NavbarProps> = ({
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const notificationsRef = useRef<HTMLDivElement | null>(null);
+  const cart = (() => {
+    try {
+      return useCart();
+    } catch (e) {
+      return null;
+    }
+  })();
 
   // Load user data from storage when component mounts or login status changes
   useEffect(() => {
@@ -196,6 +204,16 @@ const Navbar: React.FC<NavbarProps> = ({
     onMenuToggle();
   };
 
+  const handleCart = () => {
+    onMenuToggle();
+    navigate('/cart');
+  };
+
+  const handleOrganisation = () => {
+    onMenuToggle();
+    navigate('/organisation');
+  };
+
   const handleTrackStatus = () => {
     onTabChange('status');
     navigate('/status');
@@ -255,6 +273,14 @@ const Navbar: React.FC<NavbarProps> = ({
     document.addEventListener('mousedown', handleDocumentClick);
     return () => document.removeEventListener('mousedown', handleDocumentClick);
   }, [notificationsOpen, location.pathname]);
+                
+                      <button
+                        className={`mobile-menu-item`}
+                        onClick={handleOrganisation}
+                      >
+                        <FaUsers className="mobile-menu-item-icon" />
+                        <span>Organisation Request</span>
+                      </button>
 
   // Get user display name (fallback to role if no name)
   const getUserDisplayName = () => {
@@ -333,6 +359,14 @@ const Navbar: React.FC<NavbarProps> = ({
                   <span className="coins-amount">{getUserPoints()}</span>
                   <span className="coins-label">Coins</span>
                 </div>
+              )}
+              {role === 'user' && (
+                <button className="cart-btn" title="View Cart" onClick={handleCart} style={{ position: 'relative' }}>
+                  <FaCartArrowDown />
+                  {cart && cart.items.length > 0 && (
+                    <span className="cart-badge">{cart.items.length}</span>
+                  )}
+                </button>
               )}
 
               {/* Notifications */}
@@ -553,6 +587,14 @@ const Navbar: React.FC<NavbarProps> = ({
                   <FaTrophy className="mobile-menu-item-icon" />
                   <span>Leaderboard</span>
                 </button>
+
+                <button
+                  className={`mobile-menu-item`}
+                  onClick={handleOrganisation}
+                >
+                  <FaUsers className="mobile-menu-item-icon" />
+                  <span>Organisation Request</span>
+                </button>
               </>
             )}
 
@@ -608,6 +650,17 @@ const Navbar: React.FC<NavbarProps> = ({
                 >
                   <FaHandshake className="mobile-menu-item-icon" />
                   <span>Partner Management</span>
+                </button>
+                <button
+                  className={`mobile-menu-item ${activeTab === 'organisations' ? 'active' : ''}`}
+                  onClick={() => {
+                    onTabChange('organisations');
+                    navigate('/dashboard');
+                    onMenuToggle();
+                  }}
+                >
+                  <FaUsers className="mobile-menu-item-icon" />
+                  <span>Organisation Requests</span>
                 </button>
               </>
             )}

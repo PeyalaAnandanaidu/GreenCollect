@@ -2,6 +2,7 @@
 const express = require('express');
 const router = express.Router();
 const User = require('../models/Users');
+const WasteRequest = require('../models/WasteRequest');
 
 // Get all collector requests
 router.get('/collector-requests', async (req, res) => {
@@ -104,3 +105,38 @@ router.post('/reject-collector/:id', async (req, res) => {
 });
 
 module.exports = router;
+
+// Admin endpoints for organisation requests
+// Accept organisation request
+router.post('/organisation-requests/:id/accept', async (req, res) => {
+  try {
+    const reqId = req.params.id;
+    const wr = await WasteRequest.findById(reqId);
+    if (!wr) return res.status(404).json({ success: false, message: 'Organisation request not found' });
+
+    wr.collectorStatus = 'accepted';
+    await wr.save();
+
+    res.json({ success: true, message: 'Organisation request accepted', request: wr });
+  } catch (err) {
+    console.error('Error accepting organisation request:', err);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+// Reject organisation request
+router.post('/organisation-requests/:id/reject', async (req, res) => {
+  try {
+    const reqId = req.params.id;
+    const wr = await WasteRequest.findById(reqId);
+    if (!wr) return res.status(404).json({ success: false, message: 'Organisation request not found' });
+
+    wr.collectorStatus = 'rejected';
+    await wr.save();
+
+    res.json({ success: true, message: 'Organisation request rejected', request: wr });
+  } catch (err) {
+    console.error('Error rejecting organisation request:', err);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});

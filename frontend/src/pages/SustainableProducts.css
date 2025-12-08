@@ -601,6 +601,55 @@
   border-top: 1px solid rgba(255, 200, 0, 0.2);
 }
 
+.add-cart-btn {
+  background: linear-gradient(135deg, #ffd600, #ffc107);
+  color: #1a1a1a;
+  border: 1px solid rgba(0,0,0,0.08);
+  padding: 10px 12px;
+  border-radius: 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: 8px;
+  cursor: pointer;
+  font-weight: 700;
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+.add-cart-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(255,198,0,0.18); }
+.add-cart-btn .btn-icon { font-size: 14px }
+
+.add-cart-btn.disabled,
+.add-cart-btn[disabled] {
+  background: linear-gradient(135deg, rgba(255,198,0,0.14), rgba(255,198,0,0.12));
+  color: #bdbdbd;
+  cursor: not-allowed;
+  box-shadow: none;
+  transform: none;
+}
+
+.price-cta {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+}
+.product-price-inline {
+  display:flex;
+  align-items:center;
+  gap:8px;
+  background: rgba(255, 200, 0, 0.08);
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(255,200,0,0.12);
+  font-weight:700;
+  color: #ffd600;
+}
+.product-price-inline .price-coin { color: #ffd600 }
+.product-price-inline .price-amount-inline { color: #fff; margin-left:2px }
+
+/* Ensure product-actions layout fits smaller cards */
+.product-actions { padding-top: 12px; display:flex; justify-content:space-between; align-items:center }
+
 .redeem-btn {
   width: 100%;
   padding: 12px 16px;

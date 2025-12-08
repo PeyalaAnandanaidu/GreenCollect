@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { FaCoins, FaArrowLeft, FaMapMarkerAlt, FaTruck, FaCheck, FaShoppingCart } from 'react-icons/fa';
+import { useCart } from '../contexts/CartContext';
 import './RedeemCheckout.css';
 
 interface Product {
@@ -27,7 +28,12 @@ interface Address {
 const RedeemCheckout: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const product = (location.state as { product?: Product })?.product;
+  const state = (location.state || {}) as any;
+  const product = state?.product as Product | undefined;
+  const cartItems = state?.cartItems as Array<{ id: string; name: string; price: number; image?: string; qty: number }> | undefined;
+  const cart = (() => {
+    try { return useCart(); } catch { return null; }
+  })();
 
   const [currentStep, setCurrentStep] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
@@ -73,13 +79,13 @@ const RedeemCheckout: React.FC = () => {
     }
   }, []);
 
-  if (!product) {
+  if (!product && (!cartItems || cartItems.length === 0)) {
     return (
       <div className="checkout-page">
         <div className="checkout-container">
           <div className="error-card">
-            <h2>No Product Selected</h2>
-            <p>Please select a product from the Eco Store to proceed with checkout.</p>
+            <h2>No Product or Cart Selected</h2>
+            <p>Please select a product or add items to your cart to proceed with checkout.</p>
             <button className="btn-primary" onClick={() => navigate('/dashboard')}>
               <FaShoppingCart /> Back to Store
             </button>
@@ -90,7 +96,8 @@ const RedeemCheckout: React.FC = () => {
   }
 
   const deliveryCost = deliveryOption === 'express' ? 25 : 0;
-  const totalCost = product.price + deliveryCost;
+  const itemsTotal = product ? product.price : (cartItems ? cartItems.reduce((s, it) => s + (it.price * (it.qty || 1)), 0) : 0);
+  const totalCost = itemsTotal + deliveryCost;
   const canAfford = userCoins >= totalCost;
 
   const validateAddress = () =>
@@ -116,22 +123,47 @@ const RedeemCheckout: React.FC = () => {
     setIsLoading(true);
 
     try {
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      await new Promise(resolve => setTimeout(resolve, 1000));
 
       const orderId = `GC-${Date.now().toString().slice(-8)}`;
-      const orderData = {
-        orderId,
-        product,
-        address,
-        deliveryOption,
-        totalCost,
-        createdAt: new Date().toISOString(),
-      };
 
-      // ✅ Save order
-      const existingOrders = JSON.parse(localStorage.getItem('orders') || '[]');
-      existingOrders.push(orderData);
-      localStorage.setItem('orders', JSON.stringify(existingOrders));
+      // If single product flow
+      if (product) {
+        const orderData = {
+          orderId,
+          product,
+          address,
+          deliveryOption,
+          totalCost,
+          createdAt: new Date().toISOString(),
+        };
+
+        const existingOrders = JSON.parse(localStorage.getItem('redeem.orders') || '[]');
+        existingOrders.push(orderData);
+        localStorage.setItem('redeem.orders', JSON.stringify(existingOrders));
+      }
+
+      // If cart flow
+      if (cartItems && cartItems.length > 0) {
+        const orderData = {
+          orderId,
+          items: cartItems,
+          address,
+          deliveryOption,
+          totalCost,
+          createdAt: new Date().toISOString(),
+        };
+        const existingOrders = JSON.parse(localStorage.getItem('redeem.orders') || '[]');
+        existingOrders.push(orderData);
+        localStorage.setItem('redeem.orders', JSON.stringify(existingOrders));
+
+        // Clear cart via context if available
+        try {
+          cart?.clearCart();
+        } catch (e) {
+          // ignore if cart not available
+        }
+      }
 
       // ✅ Update user POINTS in correct storage
       const loginMethod =
@@ -150,7 +182,7 @@ const RedeemCheckout: React.FC = () => {
       navigate('/order-success', {
         state: {
           orderId,
-          product,
+          product: product || undefined,
           totalCoins: totalCost,
         },
       });
@@ -399,20 +431,46 @@ const RedeemCheckout: React.FC = () => {
           {/* Order Summary Sidebar */}
           <div className="order-summary">
             <h3>Order Summary</h3>
-            <div className="product-summary">
-              <img src={product.image} alt={product.name} />
-              <div className="product-info">
-                <h4>{product.name}</h4>
-                <p>{product.category}</p>
+            {cartItems && cartItems.length > 0 ? (
+              <div className="product-summary">
+                {cartItems.map((it) => (
+                  <div className="cart-item-summary" key={it.id} style={{ display: 'flex', gap: 8, marginBottom: 8, alignItems: 'center' }}>
+                    {it.image && <img src={it.image} alt={it.name} style={{ width: 56, height: 56, objectFit: 'cover', borderRadius: 6 }} />}
+                    <div className="product-info">
+                      <h4 style={{ margin: 0 }}>{it.name} <small style={{ fontWeight: 600 }}>x{it.qty}</small></h4>
+                      <p style={{ margin: 0, fontSize: 12 }}><FaCoins /> {it.price} each</p>
+                    </div>
+                  </div>
+                ))}
               </div>
-            </div>
+            ) : (
+              <div className="product-summary">
+                <img src={product.image} alt={product.name} />
+                <div className="product-info">
+                  <h4>{product.name}</h4>
+                  <p>{product.category}</p>
+                </div>
+              </div>
+            )}
+
             <div className="price-breakdown">
-              <div className="price-item">
-                <span>Product Price</span>
-                <span>
-                  <FaCoins /> {product.price}
-                </span>
-              </div>
+              {cartItems && cartItems.length > 0 ? (
+                <>
+                  <div className="price-item">
+                    <span>Subtotal</span>
+                    <span>
+                      <FaCoins /> {itemsTotal}
+                    </span>
+                  </div>
+                </>
+              ) : (
+                <div className="price-item">
+                  <span>Product Price</span>
+                  <span>
+                    <FaCoins /> {product.price}
+                  </span>
+                </div>
+              )}
               <div className="price-item">
                 <span>Delivery</span>
                 <span>

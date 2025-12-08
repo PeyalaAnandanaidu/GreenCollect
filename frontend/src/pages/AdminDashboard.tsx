@@ -6,6 +6,7 @@ import {
     FaRecycle, FaTruck, FaPlus
 } from 'react-icons/fa';
 import ProductManagement from './ProductManagement';
+import AdminOrganisations from './AdminOrganisations';
 
 interface AdminDashboardProps {
     activeTab: string;
@@ -233,12 +234,14 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ activeTab }) => {
                         {activeTab === 'management' && 'User Management'}
                         {activeTab === 'products' && 'Product Management'}
                         {activeTab === 'partners' && 'Recycling Partners'}
+                        {activeTab === 'organisations' && 'Organisation Requests'}
                     </h1>
                     <p className="page-subtitle">
                         {activeTab === 'overview' && 'Monitor platform activity and statistics'}
                         {activeTab === 'management' && 'Manage users, collectors, and platform settings'}
                         {activeTab === 'products' && 'Add and manage eco-store products'}
                         {activeTab === 'partners' && 'View and manage recycling partners'}
+                        {activeTab === 'organisations' && 'View and manage organisation collection requests'}
                     </p>
                 </div>
 
@@ -650,6 +653,12 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ activeTab }) => {
                                 </div>
                             )}
                         </div>
+                    </div>
+                )}
+
+                {activeTab === 'organisations' && (
+                    <div className="tab-content">
+                        <AdminOrganisations />
                     </div>
                 )}
             </main>

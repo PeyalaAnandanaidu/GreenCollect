@@ -3,8 +3,7 @@ const mongoose = require('mongoose');
 const wasteRequestSchema = new mongoose.Schema({
   user: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-    required: true
+    ref: 'User'
   },
   pickupDate: {
     type: Date,
@@ -31,6 +30,28 @@ const wasteRequestSchema = new mongoose.Schema({
     type: String,
     default: 'Not provided'
   },
+  contactEmail: {
+    type: String
+  },
+  // Organisation-specific fields (optional)
+  isOrganisationRequest: {
+    type: Boolean,
+    default: false
+  },
+  organisationName: {
+    type: String
+  },
+  organisationType: {
+    type: String,
+    enum: ['school', 'company', 'ngo', 'other']
+  },
+  organisationContactName: {
+    type: String
+  },
+  organisationContactPhone: {
+    type: String
+  },
+  wasteTypes: [{ type: String }],
   instructions: {
     type: String,
     default: 'None'

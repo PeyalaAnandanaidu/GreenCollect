@@ -56,26 +56,36 @@ router.get('/', authMiddleware, requireRole(['collector', 'admin']), async (req,
       .populate('assignedCollector', 'name email')
       .sort({ createdAt: -1 });
 
-    const formattedRequests = requests.map(request => ({
-      _id: request._id,
-      userId: {
+    const formattedRequests = requests.map(request => {
+      // If the request has a linked user, use that. Otherwise fall back to organisation info.
+      const userInfo = request.user ? {
         _id: request.user._id,
         name: request.user.name,
         email: request.user.email,
         phone: request.user.phone || 'Not provided'
-      },
-      pickupAddress: request.pickupAddress,
-      wasteType: request.wasteType,
-      estimatedWeight: request.estimatedWeight,
-      pickupDate: request.pickupDate.toISOString().split('T')[0],
-      pickupTime: request.pickupTime,
-      status: request.collectorStatus,
-      priority: request.priority || 'medium',
-      instructions: request.instructions,
-      coinsValue: calculateCoinsValue(request.estimatedWeight, request.wasteType),
-      createdAt: request.createdAt,
-      collectorId: request.assignedCollector?._id
-    }));
+      } : {
+        _id: null,
+        name: request.organisationName || 'Organisation Request',
+        email: request.contactEmail || 'Not provided',
+        phone: request.organisationContactPhone || 'Not provided'
+      };
+
+      return {
+        _id: request._id,
+        userId: userInfo,
+        pickupAddress: request.pickupAddress,
+        wasteType: request.wasteType || (request.wasteTypes ? request.wasteTypes.join(', ') : 'mixed'),
+        estimatedWeight: request.estimatedWeight,
+        pickupDate: request.pickupDate ? request.pickupDate.toISOString().split('T')[0] : null,
+        pickupTime: request.pickupTime,
+        status: request.collectorStatus,
+        priority: request.priority || 'medium',
+        instructions: request.instructions,
+        coinsValue: calculateCoinsValue(request.estimatedWeight || 0, request.wasteType || 'mixed'),
+        createdAt: request.createdAt,
+        collectorId: request.assignedCollector?._id
+      };
+    });
 
     res.status(200).json(formattedRequests);
 
@@ -239,6 +249,71 @@ router.post('/', authMiddleware, async (req, res) => {
       message: 'Server error while scheduling pickup',
       error: error.message 
     });
+  }
+});
+
+// @route   POST /api/waste-requests/organisation
+// @desc    Public endpoint for organisations to request a dedicated collection
+// @access  Public
+router.post('/organisation', async (req, res) => {
+  try {
+    const {
+      organisationName,
+      organisationType,
+      contactName,
+      contactEmail,
+      contactPhone,
+      pickupAddress,
+      wasteTypes,
+      estimatedWeight,
+      pickupDate,
+      pickupTime,
+      instructions
+    } = req.body;
+
+    // Basic validation
+    if (!organisationName || !pickupAddress || !wasteTypes || !pickupDate || !pickupTime) {
+      return res.status(400).json({ success: false, message: 'Missing required organisation fields' });
+    }
+
+    const weight = parseFloat(estimatedWeight) || 0;
+    // Normalize wasteTypes and pick a primary wasteType compatible with schema enum
+    const normalizedWasteTypes = Array.isArray(wasteTypes)
+      ? wasteTypes.map(s => String(s).trim().toLowerCase())
+      : String(wasteTypes).split(',').map(s => s.trim().toLowerCase());
+
+    const allowedTypes = ['plastic', 'paper', 'electronics', 'metal', 'glass', 'organic', 'mixed'];
+    const primaryType = normalizedWasteTypes.find(w => allowedTypes.includes(w)) || 'mixed';
+
+    const newRequest = new WasteRequest({
+      isOrganisationRequest: true,
+      organisationName,
+      organisationType,
+      organisationContactName: contactName,
+      contactEmail,
+      organisationContactPhone: contactPhone,
+      pickupAddress,
+      wasteTypes: normalizedWasteTypes,
+      wasteType: primaryType,
+      estimatedWeight: weight,
+      pickupDate: new Date(pickupDate),
+      pickupTime,
+      instructions: instructions || 'None',
+      collectorStatus: 'pending',
+      collectionStatus: 'not_collected'
+    });
+
+    const savedRequest = await newRequest.save();
+
+    res.status(201).json({
+      success: true,
+      message: 'Organisation collection request submitted successfully',
+      request: savedRequest
+    });
+
+  } catch (error) {
+    console.error('Error creating organisation waste request:', error);
+    res.status(500).json({ success: false, message: 'Server error', error: error.message });
   }
 });
 
@@ -596,6 +671,10 @@ router.put('/:requestId/cancel', authMiddleware, async (req, res) => {
     }
 
     // Check if user owns this request
+    if (!request.user) {
+      return res.status(403).json({ success: false, message: 'Cannot cancel organisation requests from user account' });
+    }
+
     if (request.user.toString() !== userId) {
       return res.status(403).json({ 
         success: false, 

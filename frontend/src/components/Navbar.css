@@ -181,6 +181,46 @@
   font-size: 1.25rem;
 }
 
+/* Cart button (desktop) */
+.cart-btn {
+  background: rgba(255, 204, 0, 0.18);
+  border: 1px solid rgba(255, 204, 0, 0.45);
+  color:  rgba(247, 198, 2, 0.914);;
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  font-size: 1.05rem;
+}
+
+.cart-btn:hover {
+ 
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(255,198,0,0.18);
+}
+
+/* Small badge for cart item count */
+.cart-badge {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  background: #ff3333;
+  color: #fff;
+  border-radius: 50%;
+  width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.68rem;
+  font-weight: 800;
+  border: 2px solid #000000;
+}
+
 .notification-badge {
   position: absolute;
   top: -5px;

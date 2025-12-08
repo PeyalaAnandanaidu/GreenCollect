@@ -1,4 +1,5 @@
 import { useState,useEffect } from 'react';
+import { useCart } from '../contexts/CartContext';
 import { Link } from 'react-router-dom';
 import './SustainableProducts.css';
 import {
@@ -39,6 +40,7 @@ const SustainableProducts: React.FC = () => {
     const [products, setProducts] = useState<Product[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
+    const { addToCart } = useCart();
     useEffect(() => {
         const fetchProducts = async () => {
             console.log('Fetching products from backend...');
@@ -298,21 +300,22 @@ const SustainableProducts: React.FC = () => {
                                 </div>
 
                                 <div className="product-actions">
-                                    {(userCoins >= product.price && product.inStock) ? (
-                                        <Link
-                                            className="redeem-btn available"
-                                            to="/redeem"
-                                            state={{ product }}
+                                    <div className="price-cta">
+                                        <div className="product-price-inline">
+                                            <FaCoins className="price-coin" />
+                                            <span className="price-amount-inline">{product.price}</span>
+                                        </div>
+
+                                        <button
+                                            className={`add-cart-btn ${!product.inStock ? 'disabled' : ''}`}
+                                            onClick={() => product.inStock && addToCart({ id: product.id, name: product.name, price: product.price, image: product.image })}
+                                            disabled={!product.inStock}
+                                            title={product.inStock ? 'Add to cart' : 'Out of stock'}
                                         >
                                             <FaShoppingCart className="btn-icon" />
-                                            Redeem Now
-                                        </Link>
-                                    ) : (
-                                        <button className="redeem-btn insufficient" disabled>
-                                            <FaShoppingCart className="btn-icon" />
-                                            {!product.inStock ? 'Out of Stock' : `Need ${product.price - userCoins} More`}
+                                            {product.inStock ? 'Add to Cart' : 'Out of Stock'}
                                         </button>
-                                    )}
+                                    </div>
                                 </div>
                             </div>
                         </div>

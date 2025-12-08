@@ -1069,8 +1069,8 @@ const UserDashboard: React.FC<UserDashboardProps> = ({ activeTab, onTabChange })
                 {activeTab === 'products' && (
                     <SustainableProducts userCoins={user?.points || 0} />
                 )}
-
-                {/* Leaderboard Tab */}
+                
+                /* Leaderboard Tab */
                 {activeTab === 'leaderboard' && (
                     <div className="tab-content">
                         <div className="leaderboard-container">
@@ -1167,8 +1167,8 @@ const UserDashboard: React.FC<UserDashboardProps> = ({ activeTab, onTabChange })
                                 </div>
                             )}
                         </div>
-                    </div>
-                )}
+                        </div>
+                    )}
             </main>
 
             {/* User Details Modal */}
